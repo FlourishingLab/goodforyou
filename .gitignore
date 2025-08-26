@@ -1,0 +1,10 @@
+# Test binary, built with `go test -c`
+*.test
+
+# Go workspace file
+go.work
+
+# IDE specific files
+.vscode/
+
+user-db
