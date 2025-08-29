@@ -8,6 +8,15 @@
     - do mental health always?
     - multiple questionnaire pages
 
+- remove questions from database --> overkill
+- use database for answers
+- auth
+    - use mongodb _id as uuid?
+
+- make mongodb connection string a secret (godotenv?)
+- implement history in database
+
+
 
 
 
@@ -46,3 +55,15 @@ The GF12 categories we call wellbeing dimensions here
 
 ### Facets
 A wellbeing dimension, e.g. mental health, has multiple facets, e.g. basic psychological needs and emotional regulation
+
+
+
+
+### ADMIN CLI
+```
+# Build
+go build -o admin cmd/admin/main.go
+
+# Run commands
+./admin migrate         # Will ask for confirmation
+```

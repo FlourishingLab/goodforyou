@@ -4,18 +4,14 @@ import (
 	"log"
 	"sort"
 
+	"user-db/db"
 	"user-db/shared"
 )
 
-type Answer struct {
-	QuestionID int `json:"questionid"`
-	Value      int `json:"value"`
-}
+func GetSorted(userAnswers db.UserAnswers) (sortedDims []shared.CatVal, sortedFacets []shared.CatVal) {
 
-func GetSorted(answers []Answer) (sortedDims []shared.CatVal, sortedFacets []shared.CatVal) {
-
-	sortedDims = sortAvgCategory(answers, shared.DimensionType)
-	sortedFacets = sortAvgCategory(answers, shared.FacetType)
+	sortedDims = sortAvgCategory(userAnswers, shared.DimensionType)
+	sortedFacets = sortAvgCategory(userAnswers, shared.FacetType)
 
 	log.Printf("Dimensions: %v", sortedDims)
 	log.Printf("Facets: %v", sortedFacets[:5])
@@ -23,16 +19,18 @@ func GetSorted(answers []Answer) (sortedDims []shared.CatVal, sortedFacets []sha
 	return sortedDims, sortedFacets
 }
 
-func sortAvgCategory(answers []Answer, catType shared.CatType) []shared.CatVal {
+func sortAvgCategory(userAnswers db.UserAnswers, catType shared.CatType) []shared.CatVal {
 
 	mapC := make(map[string][]int)
 
-	for _, answer := range answers {
-		if question, exists := qs[answer.QuestionID]; exists {
+	answers := userAnswers.Answers
+
+	for i, answer := range answers {
+		if question, exists := qs[i]; exists {
 			if catType == shared.DimensionType {
-				mapC[question.Dimension] = append(mapC[question.Dimension], answer.Value)
+				mapC[question.Dimension] = append(mapC[question.Dimension], *answer.LatestAnswer.Value)
 			} else {
-				mapC[question.Facet] = append(mapC[question.Facet], answer.Value)
+				mapC[question.Facet] = append(mapC[question.Facet], *answer.LatestAnswer.Value)
 			}
 		}
 	}

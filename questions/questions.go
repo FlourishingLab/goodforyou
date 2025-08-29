@@ -4,28 +4,16 @@ import (
 	"encoding/csv"
 	"log"
 	"os"
+	"user-db/shared"
 )
 
-type Question struct {
-	Dimension string `json:"dimension"`
-	Facet     string `json:"facet"`
-	Text      string `json:"text"`
-	MinLabel  string `json:"minLabel"`
-	MaxLabel  string `json:"maxLabel"`
-}
+// const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTCQkU-Gxi1YHpT1qYAvXhbPNOd85CjBUMayXQUYUvMEJU3Yn8jkE1AveXrtAmJM8YHkyZRffZDegGk/pub?gid=0&single=true&output=csv"
 
-type Facet struct {
-	Name      string `json:"name"`
-	Dimension string `json:"dimension"`
-}
+var qs map[int]shared.Question
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTCQkU-Gxi1YHpT1qYAvXhbPNOd85CjBUMayXQUYUvMEJU3Yn8jkE1AveXrtAmJM8YHkyZRffZDegGk/pub?gid=0&single=true&output=csv"
+// var dimensions []string
 
-var qs map[int]Question
-
-var dimensions []string
-
-var facets map[string]Facet
+// var facets map[string]shared.Facet
 
 func init() {
 	var err error
@@ -34,33 +22,33 @@ func init() {
 		log.Fatalf("Failed to load questions: %v", err)
 	}
 
-	facets = setFacets(qs)
-	dimensions = setDimensions(qs)
+	// facets = setFacets(qs)
+	// dimensions = setDimensions(qs)
 }
 
-func setFacets(qs map[int]Question) map[string]Facet {
-	result := make(map[string]Facet)
-	for _, q := range qs {
-		result[q.Facet] = Facet{
-			Name:      q.Facet,
-			Dimension: q.Dimension,
-		}
-	}
-	return result
-}
+// func setFacets(qs map[int]shared.Question) map[string]shared.Facet {
+// 	result := make(map[string]shared.Facet)
+// 	for _, q := range qs {
+// 		result[q.Facet] = shared.Facet{
+// 			Name:      q.Facet,
+// 			Dimension: q.Dimension,
+// 		}
+// 	}
+// 	return result
+// }
 
-func setDimensions(qs map[int]Question) (result []string) {
-	seen := make(map[string]bool)
-	for _, q := range qs {
-		if !seen[q.Dimension] {
-			seen[q.Dimension] = true
-			result = append(result, q.Dimension)
-		}
-	}
-	return result
-}
+// func setDimensions(qs map[int]shared.Question) (result []string) {
+// 	seen := make(map[string]bool)
+// 	for _, q := range qs {
+// 		if !seen[q.Dimension] {
+// 			seen[q.Dimension] = true
+// 			result = append(result, q.Dimension)
+// 		}
+// 	}
+// 	return result
+// }
 
-func loadQuestionsCSV() (map[int]Question, error) {
+func loadQuestionsCSV() (map[int]shared.Question, error) {
 
 	// questionsCSV, err := getFromGoogleSheet()
 	questionsCSV, err := getFromFile()
@@ -74,15 +62,10 @@ func loadQuestionsCSV() (map[int]Question, error) {
 		return nil, err
 	}
 
-	questions := make(map[int]Question)
+	questions := make(map[int]shared.Question)
 	for i, row := range rows {
-		if i == 0 {
-			continue // skip header
-		}
-		if len(row) < 5 {
-			continue
-		}
-		questions[i] = Question{
+		questions[i] = shared.Question{
+			ID:        i,
 			Dimension: row[0],
 			Facet:     row[1],
 			Text:      row[2],
@@ -113,6 +96,6 @@ func getFromFile() (*os.File, error) {
 // 	return resp.Body, nil
 // }
 
-func GetQuestions() map[int]Question {
+func GetQuestions() map[int]shared.Question {
 	return qs
 }
