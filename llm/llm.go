@@ -19,14 +19,14 @@ func init() {
 
 }
 
-func Prompt(sortedCat []shared.CatVal, sortedSubCat []shared.CatVal) string {
+func Prompt(sortedDimensions []shared.CatVal, sortedFacets []shared.CatVal) string {
 
 	params := responses.ResponseNewParams{
 		Prompt: responses.ResponsePromptParam{
 			ID: "pmpt_68a854a4a3c48193ba6b74da1a8e866a0c7c540e5eb70354",
 		},
 		Input: responses.ResponseNewParamsInputUnion{
-			OfString: param.Opt[string]{Value: "Response in JSON\ncategories:\n" + catValToString(sortedCat) + "\nweakest subcategories\n:" + catValToString(sortedSubCat)},
+			OfString: param.Opt[string]{Value: "Response in JSON\ncategories:\n" + catValToString(sortedDimensions) + "\nweakest subcategories\n:" + catValToString(sortedFacets)},
 		},
 	}
 

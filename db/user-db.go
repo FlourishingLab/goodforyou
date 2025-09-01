@@ -41,47 +41,11 @@ func init() {
 	}
 }
 
-func ImportQuestions(questions map[int]shared.Question) {
-
-	log.Println("Importing questions into MongoDB..." + questions[1].Text)
-
-	var qs []shared.Question
-	for _, v := range questions {
-		qs = append(qs, v)
-	}
-
-	collection := client.Database(DATABASE_NAME).Collection(QUESTIONS)
-	result, err := collection.InsertMany(context.TODO(), qs)
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("Inserted %d documents: %v", len(result.InsertedIDs), result.InsertedIDs)
-}
-
-func DeleteQuestions() {
-	collection := client.Database(DATABASE_NAME).Collection(QUESTIONS)
-	result, err := collection.DeleteMany(context.TODO(), bson.D{})
-	if err != nil {
-		panic(err)
-	}
-	log.Printf("Deleted %d documents", result.DeletedCount)
-}
-
-func GetQuestion(questionID int) shared.Question {
-	collection := client.Database(DATABASE_NAME).Collection(QUESTIONS)
-	var result shared.Question
-	filter := map[string]int{"questionid": questionID}
-	err := collection.FindOne(context.TODO(), filter).Decode(&result)
-	if err != nil {
-		panic(err)
-	}
-	return result
-}
-
 func NewUser(userid string) {
 	collection := client.Database(DATABASE_NAME).Collection(USERANSWERS)
 	var userAnswers UserAnswers
 	userAnswers.UserID = userid
+	userAnswers.Answers = make(map[int]QuestionAnswers)
 
 	result, err := collection.InsertOne(context.TODO(), userAnswers)
 	if err != nil {
@@ -93,7 +57,7 @@ func NewUser(userid string) {
 func GetUser(userID string) (UserAnswers, bool) {
 	collection := client.Database(DATABASE_NAME).Collection(USERANSWERS)
 	var result UserAnswers
-	filter := map[string]string{"_id": userID}
+	filter := map[string]string{"userid": userID}
 	singleResult := collection.FindOne(context.TODO(), filter)
 	err := singleResult.Decode(&result)
 	if err == mongo.ErrNoDocuments {
@@ -102,7 +66,6 @@ func GetUser(userID string) (UserAnswers, bool) {
 	} else if err != nil {
 		panic(err)
 	}
-	log.Printf("result: %v", result)
 	return result, true
 }
 
@@ -114,17 +77,6 @@ func DeleteUser(userID string) {
 		panic(singleResult.Err())
 	}
 	log.Printf("deleted user: %v", singleResult.Decode(UserAnswers{}))
-}
-
-func GetQuestionForUser(questionID int) shared.Question {
-	collection := client.Database(DATABASE_NAME).Collection(QUESTIONS)
-	var result shared.Question
-	filter := map[string]int{"questionid": questionID}
-	err := collection.FindOne(context.TODO(), filter).Decode(&result)
-	if err != nil {
-		panic(err)
-	}
-	return result
 }
 
 func UpsertAnswer(userid string, questionID int, kind shared.AnswerKind, value int) error {
@@ -139,7 +91,7 @@ func UpsertAnswer(userid string, questionID int, kind shared.AnswerKind, value i
 
 	coll := client.Database(DATABASE_NAME).Collection(USERANSWERS)
 
-	filter := bson.M{"_id": userid}
+	filter := bson.M{"userid": userid}
 	update := bson.M{
 		"$set": bson.M{
 			latestPath: answer,

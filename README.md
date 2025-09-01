@@ -8,10 +8,14 @@
     - do mental health always?
     - multiple questionnaire pages
 
-- remove questions from database --> overkill
+- THere must be an easier way to get all these averages and stuff
+
 - use database for answers
 - auth
     - use mongodb _id as uuid?
+
+- is there a social connection bias in the prompt?
+
 
 - make mongodb connection string a secret (godotenv?)
 - implement history in database
@@ -25,7 +29,7 @@
 ### GET /v1/userid
 Generates and returns a user ID.
 
-### GET /v1/questions/USERID/10
+### GET /v1/questions/USERID
 Gets the next x (in this case 10) questions in order of priority of user with USERID
 
 ### POST /v1/responses

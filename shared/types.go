@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+const GENERAL string = "general"
+
 type CatType int
 
 const (
@@ -33,34 +35,52 @@ func (cv CatVal) ToString() string {
 }
 
 type Question struct {
-	// Primary key in MongoDB
-	ID        int `json:"_id"`
-	Dimension string
-	Facet     string
-	Text      string
-	MinLabel  string
-	MaxLabel  string
+	ID           int    `json:"id"`
+	Text         string `json:"text"`
+	MinLabel     string `json:"min_label"`
+	MaxLabel     string `json:"max_label"`
+	Dimension    string `json:"dimension"`
+	SubDimension string `json:"sub_dimension"`
+	Facet        string `json:"facet"`
 }
 
 type Facet struct {
-	Name      string `json:"name"`
-	Dimension string `json:"dimension"`
+	Questions []Question `json:"questions"`
 }
 
-type AnswerKind int
+type Dimension struct {
+	SubDimensions    map[string]SubDimension `json:"sub_dimensions"`
+	GeneralQuestions []Question              `json:"general_questions"`
+}
+
+type SubDimension struct {
+	Facets map[string]Facet `json:"facets"`
+}
+
+type AnswerKind string
 
 const (
-	DONTKNOW AnswerKind = iota
-	SCALE
+	DONTKNOW AnswerKind = "DONTKNOW"
+	SCALE    AnswerKind = "SCALE"
 )
 
-func (ct AnswerKind) String() string {
-	switch ct {
+func (ak AnswerKind) String() string {
+	switch ak {
 	case DONTKNOW:
-		return "dontknow"
+		return "DONTKNOW"
 	case SCALE:
-		return "scale"
+		return "SCALE"
 	default:
-		return "Unknown"
+		return "UNKNOWN"
 	}
+}
+
+func ToAnswerKind(kind string) (AnswerKind, error) {
+	switch kind {
+	case "DONTKNOW":
+		return DONTKNOW, nil
+	case "SCALE":
+		return SCALE, nil
+	}
+	return AnswerKind(""), fmt.Errorf("invalid AnswerKind: %s", kind)
 }

@@ -5,7 +5,7 @@ import "time"
 type UserAnswers struct {
 	// primary key in MongoDB
 	UserID  string                  `json:"_id"`
-	Answers map[int]QuestionAnswers `json:"answers,omitempty"`
+	Answers map[int]QuestionAnswers `json:"answers"`
 }
 
 type QuestionAnswers struct {

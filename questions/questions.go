@@ -2,79 +2,143 @@ package questions
 
 import (
 	"encoding/csv"
+	"errors"
 	"log"
 	"os"
+	"user-db/db"
 	"user-db/shared"
 )
 
-// const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTCQkU-Gxi1YHpT1qYAvXhbPNOd85CjBUMayXQUYUvMEJU3Yn8jkE1AveXrtAmJM8YHkyZRffZDegGk/pub?gid=0&single=true&output=csv"
-
-var qs map[int]shared.Question
-
-// var dimensions []string
-
-// var facets map[string]shared.Facet
+var dimensions map[string]shared.Dimension
+var dimensionQuestions []shared.Question
+var questions map[int]shared.Question
 
 func init() {
-	var err error
-	qs, err = loadQuestionsCSV()
+	err := loadQuestionsCSV()
 	if err != nil {
 		log.Fatalf("Failed to load questions: %v", err)
 	}
-
-	// facets = setFacets(qs)
-	// dimensions = setDimensions(qs)
 }
 
-// func setFacets(qs map[int]shared.Question) map[string]shared.Facet {
-// 	result := make(map[string]shared.Facet)
-// 	for _, q := range qs {
-// 		result[q.Facet] = shared.Facet{
-// 			Name:      q.Facet,
-// 			Dimension: q.Dimension,
-// 		}
-// 	}
-// 	return result
-// }
-
-// func setDimensions(qs map[int]shared.Question) (result []string) {
-// 	seen := make(map[string]bool)
-// 	for _, q := range qs {
-// 		if !seen[q.Dimension] {
-// 			seen[q.Dimension] = true
-// 			result = append(result, q.Dimension)
-// 		}
-// 	}
-// 	return result
-// }
-
-func loadQuestionsCSV() (map[int]shared.Question, error) {
-
-	// questionsCSV, err := getFromGoogleSheet()
+func loadQuestionsCSV() error {
 	questionsCSV, err := getFromFile()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	reader := csv.NewReader(questionsCSV)
 	rows, err := reader.ReadAll()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	questions := make(map[int]shared.Question)
+	questions = make(map[int]shared.Question)
+	dimensions = make(map[string]shared.Dimension)
+
 	for i, row := range rows {
-		questions[i] = shared.Question{
-			ID:        i,
-			Dimension: row[0],
-			Facet:     row[1],
-			Text:      row[2],
-			MinLabel:  row[3],
-			MaxLabel:  row[4],
+
+		// TODO validate more
+		if row[3] == "" {
+			return errors.New("question text cannot be empty")
+		}
+
+		question := shared.Question{
+			ID:           i,
+			Dimension:    row[0],
+			SubDimension: row[1],
+			Facet:        row[2],
+			Text:         row[3],
+			MinLabel:     row[4],
+			MaxLabel:     row[5],
+		}
+		questions[i] = question
+
+		// init dimensions
+		dimension, ok := dimensions[question.Dimension]
+		if !ok {
+			dimension = shared.Dimension{
+				SubDimensions:    make(map[string]shared.SubDimension),
+				GeneralQuestions: []shared.Question{},
+			}
+		}
+
+		if question.SubDimension == shared.GENERAL {
+			dimensionQuestions = append(dimensionQuestions, question)
+		} else if question.Facet == shared.GENERAL {
+			dimension.GeneralQuestions = append(dimension.GeneralQuestions, question)
+		} else {
+			subDim, ok := dimension.SubDimensions[question.SubDimension]
+			if !ok {
+				subDim = shared.SubDimension{
+					Facets: make(map[string]shared.Facet),
+				}
+			}
+			// add non-general to facets
+			facet, ok := subDim.Facets[question.Facet]
+			if !ok {
+				facet = shared.Facet{
+					Questions: []shared.Question{},
+				}
+			}
+			facet.Questions = append(facet.Questions, question)
+			subDim.Facets[question.Facet] = facet
+			dimension.SubDimensions[question.SubDimension] = subDim
+
+		}
+
+		dimensions[question.Dimension] = dimension
+	}
+
+	return nil
+}
+
+func GetNextQuestions(userId string) ([]shared.Question, error) {
+
+	// need answered questions
+	userAnswer, exist := db.GetUser(userId)
+	if !exist {
+		return nil, errors.New("user not found")
+	}
+
+	// Are general dimension questions answered
+	for i := range dimensionQuestions {
+		if userAnswer.GetLatestAnswer(i) == nil {
+			return dimensionQuestions, nil
 		}
 	}
 
-	return questions, nil
+	// All general dimension questions answered, sort them
+	sortedDimQ := userAnswer.SortByDimension(dimensionQuestions)
+
+	// start with the lowest Dimension
+	for _, dim := range sortedDimQ {
+
+		currentDimension := dimensions[dim.Name]
+
+		// Are general subdimension questions answered?
+		for i := range currentDimension.GeneralQuestions {
+			if userAnswer.GetLatestAnswer(i) == nil {
+				return currentDimension.GeneralQuestions, nil
+			}
+		}
+
+		// Send questions from the first unanswered facet, if available
+		subDim := currentDimension.SubDimensions
+		for _, sd := range subDim {
+			for _, facets := range sd.Facets {
+				for _, question := range facets.Questions {
+					if userAnswer.GetLatestAnswer(question.ID) == nil {
+						return facets.Questions, nil
+					}
+				}
+			}
+		}
+
+		log.Printf("Dimension %s fully answered", dim.Name)
+
+	}
+
+	return []shared.Question{}, nil
 }
 
 func getFromFile() (*os.File, error) {
@@ -83,19 +147,18 @@ func getFromFile() (*os.File, error) {
 	return os.Open(FILE_PATH)
 }
 
-// func getFromGoogleSheet(url string) (io.ReadCloser, error) {
-// 	resp, err := http.Get(SHEET_URL)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer resp.Body.Close()
-
-// 	if resp.StatusCode != http.StatusOK {
-// 		return nil, fmt.Errorf("failed to fetch CSV: status code %d", resp.StatusCode)
-// 	}
-// 	return resp.Body, nil
-// }
+func GetDimensions() map[string]shared.Dimension {
+	return dimensions
+}
 
 func GetQuestions() map[int]shared.Question {
-	return qs
+	return questions
+}
+
+func mapToSlice(m map[int]shared.Question) []shared.Question {
+	var slice []shared.Question
+	for _, v := range m {
+		slice = append(slice, v)
+	}
+	return slice
 }

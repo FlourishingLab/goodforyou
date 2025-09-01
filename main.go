@@ -11,7 +11,7 @@ import (
 func main() {
 
 	http.HandleFunc("/v1/userid/", api.WithCors(api.HandleUserId))
-	http.HandleFunc("/v1/questions", api.WithCors(api.GetQuestions))
+	http.HandleFunc("/v1/questions/", api.WithCors(api.GetQuestions))
 	http.HandleFunc("/v1/responses", api.WithCors(api.SubmitResponses))
 	http.HandleFunc("/v1/topics/llm/", api.WithCors(api.GetTopicsLLM))
 

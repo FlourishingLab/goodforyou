@@ -10,6 +10,7 @@ import (
 	"user-db/db"
 	"user-db/llm"
 	"user-db/questions"
+	"user-db/shared"
 )
 
 // ---------- Handlers ----------
@@ -38,8 +39,27 @@ func HandleUserId(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetQuestions(w http.ResponseWriter, r *http.Request) {
+
+	// get userID from path
+	var userID string
+	parts := strings.Split(r.URL.Path, "/")
+	// path: v1/questions/USERID
+	if len(parts) >= 4 {
+		userID = parts[3]
+	} else {
+		http.Error(w, "invalid path", http.StatusBadRequest)
+		log.Printf("Invalid path: %s", r.URL.Path)
+		return
+	}
+
+	nextQuestions, err := questions.GetNextQuestions(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(questions.GetQuestions())
+	json.NewEncoder(w).Encode(nextQuestions)
 }
 
 func SubmitResponses(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +70,13 @@ func SubmitResponses(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, answer := range payload.Answers {
-		db.UpsertAnswer(payload.UserID, answer.QuestionID, answer.Kind, answer.Value)
+		kind, err := shared.ToAnswerKind(answer.Kind)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		// TODO Insert Many. This is not atomic
+		db.UpsertAnswer(payload.UserID, answer.QuestionID, kind, answer.Value)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -94,13 +120,13 @@ func GetTopicsLLM(w http.ResponseWriter, r *http.Request) {
 // TODO before production
 func WithCors(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Replace * with your frontend's origin in production
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		// Handle preflight
 		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 

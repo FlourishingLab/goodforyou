@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"user-db/db"
-	"user-db/questions"
 	"user-db/shared"
 )
 
@@ -25,12 +24,6 @@ func main() {
 	}
 
 	switch os.Args[1] {
-	case "import-questions":
-		importQuestions()
-	case "delete-questions":
-		deleteQuestions()
-	case "get-question":
-		getQuestions(os.Args[2])
 	case "get":
 		getAnswersForUser(os.Args[2])
 	case "create-user":
@@ -75,16 +68,6 @@ func addAnswer(args []string) {
 	db.UpsertAnswer(userId, questionId, shared.SCALE, value)
 }
 
-func importQuestions() {
-	log.Printf("Importing questions into database...")
-	db.ImportQuestions(questions.GetQuestions())
-}
-
-func deleteQuestions() {
-	log.Printf("Deleting all questions from database...")
-	db.DeleteQuestions()
-}
-
 func getAnswersForUser(userId string) {
 
 	userAnswers, exists := db.GetUser(userId)
@@ -93,14 +76,4 @@ func getAnswersForUser(userId string) {
 		os.Exit(1)
 	}
 	log.Printf("UserAnswers for user %s: %v", userId, userAnswers)
-}
-
-func getQuestions(questionId string) {
-	// convert id to int
-	i, err := strconv.Atoi(questionId)
-	if err != nil {
-		fmt.Printf("Could not convert question-id to int: %s\n", questionId)
-		os.Exit(1)
-	}
-	db.GetQuestion(i)
 }
