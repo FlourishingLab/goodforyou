@@ -16,16 +16,15 @@ func (ua *UserAnswers) GetLatestAnswer(questionID int) *AnswerEvent {
 	return nil
 }
 
-func (ua *UserAnswers) SortByDimension(questions []shared.Question) []shared.CatVal {
+func (ua *UserAnswers) SortByDimension(qs []shared.Question, dims map[string]shared.Dimension) []shared.CatVal {
 
 	dimsToQuestions := make(map[string][]int)
 
-	for i, question := range questions {
+	for i, question := range qs {
 		answer := ua.GetLatestAnswer(i)
 		if answer != nil {
 			dimsToQuestions[question.Dimension] = append(dimsToQuestions[question.Dimension], *answer.Value)
 		}
-
 	}
 
 	var sortedDimensions []shared.CatVal
@@ -35,17 +34,22 @@ func (ua *UserAnswers) SortByDimension(questions []shared.Question) []shared.Cat
 
 	// Sort by Value (ascending)
 	sort.Slice(sortedDimensions, func(i, j int) bool {
-		return sortedDimensions[i].Value < sortedDimensions[j].Value
+
+		if sortedDimensions[i].Value != sortedDimensions[j].Value {
+			return sortedDimensions[i].Value < sortedDimensions[j].Value
+		}
+		// if equal rating, prioritise specific dimensions
+		return dims[sortedDimensions[i].Name].Rank < dims[sortedDimensions[j].Name].Rank
 	})
 
 	return sortedDimensions
 }
 
-func (ua *UserAnswers) SortByFacet(questions []shared.Question) []shared.CatVal {
+func (ua *UserAnswers) SortByFacet(qs []shared.Question) []shared.CatVal {
 
 	facetsToQuestions := make(map[string][]int)
 
-	for i, question := range questions {
+	for i, question := range qs {
 		if question.Facet != shared.GENERAL {
 			answer := ua.GetLatestAnswer(i)
 			if answer != nil {
@@ -76,11 +80,11 @@ func (ua *UserAnswers) DimensionRatingsToString(dimensionName string, dimensions
 			for sk, subdims := range dims.SubDimensions {
 				result += sk + ":\n"
 				for fk, facet := range subdims.Facets {
-					questions := []int{}
+					qs := []int{}
 					for _, q := range facet.Questions {
-						questions = append(questions, *ua.GetLatestAnswer(q.ID).Value)
+						qs = append(qs, *ua.GetLatestAnswer(q.ID).Value)
 					}
-					facetAvg := avg(questions)
+					facetAvg := avg(qs)
 					result += fk + ": " + strconv.Itoa(facetAvg)
 				}
 			}
@@ -107,12 +111,12 @@ func avg(values []int) (total int) {
 	return total / len(values)
 }
 
-func (ua *UserAnswers) GetSorted(questions map[int]shared.Question) (sortedDims []shared.CatVal, sortedFacets []shared.CatVal) {
+func (ua *UserAnswers) GetSorted(qs map[int]shared.Question, dims map[string]shared.Dimension) (sortedDims []shared.CatVal, sortedFacets []shared.CatVal) {
 
 	// convert questions to list of questions
-	questionsList := shared.MapToSlice(questions)
+	questionsList := shared.MapToSlice(qs)
 
-	sortedDims = ua.SortByDimension(questionsList)
+	sortedDims = ua.SortByDimension(questionsList, dims)
 	sortedFacets = ua.SortByFacet(questionsList)
 
 	log.Printf("Dimensions: %v", sortedDims)

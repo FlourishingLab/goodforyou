@@ -5,14 +5,25 @@ import (
 	"errors"
 	"log"
 	"os"
+
 	"user-db/db"
 	"user-db/shared"
 )
 
-// TODO make immutable?
+// TODO make immutable? const?
 var dimensions map[string]shared.Dimension
 var dimensionQuestions []shared.Question
 var questions map[int]shared.Question
+
+var dimensionOrder map[string]int = map[string]int{
+	"Physical Health":      1,
+	"Mental Health":        2,
+	"Social Relationships": 3,
+	"Character & Virtue":   4,
+	"Meaning & Purpose":    5,
+	"Material Stability":   6,
+	"Spirituality":         7,
+}
 
 func init() {
 	err := loadQuestionsCSV()
@@ -57,9 +68,15 @@ func loadQuestionsCSV() error {
 		// init dimensions
 		dimension, ok := dimensions[question.Dimension]
 		if !ok {
+			rank, ok := dimensionOrder[question.Dimension]
+			if !ok {
+				rank = 100
+			}
+
 			dimension = shared.Dimension{
 				SubDimensions:    make(map[string]shared.SubDimension),
 				GeneralQuestions: []shared.Question{},
+				Rank:             rank,
 			}
 		}
 
@@ -109,7 +126,7 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 	}
 
 	// All general dimension questions answered, sort them
-	sortedDimQ := userAnswer.SortByDimension(dimensionQuestions)
+	sortedDimQ := userAnswer.SortByDimension(dimensionQuestions, dimensions)
 
 	// start with the lowest Dimension
 	for _, dim := range sortedDimQ {
@@ -123,20 +140,23 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 			}
 		}
 
-		// Send questions from the first unanswered facet, if available
+		// Send all questions from the first unanswered subdimension, if available
 		subDim := currentDimension.SubDimensions
 		for _, sd := range subDim {
+			allAnswered := true
+			subDimQs := []shared.Question{}
 			for _, facets := range sd.Facets {
 				for _, question := range facets.Questions {
+					subDimQs = append(subDimQs, question)
 					if userAnswer.GetLatestAnswer(question.ID) == nil {
-						return facets.Questions, nil
+						allAnswered = false
 					}
 				}
 			}
+			if !allAnswered {
+				return subDimQs, nil
+			}
 		}
-
-		log.Printf("Dimension %s fully answered", dim.Name)
-
 	}
 
 	return []shared.Question{}, nil
@@ -151,7 +171,6 @@ func GetCompleteDimensions(ua db.UserAnswers) []string {
 		if k != "Happiness & Life Satisfaction" &&
 			k != "Meaning & Purpose" &&
 			k != "Character & Virtue" &&
-			k != "Social Relationships" &&
 			k != "Material Stability" &&
 			k != "Spirituality" {
 			dims[k] = v

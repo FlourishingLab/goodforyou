@@ -14,27 +14,36 @@ Material Stability,general,general,How often do you worry about being able to me
 Material Stability,general,general,"How often do you worry about safety, food or housing?",Worry all the time,Do not ever worry,need answer,
 Spirituality,general,general,"How often do you experience a deep sense of connection to something greater than yourself — such as nature, humanity, life, the universe, or the divine?",Never,Always,need answer,"TODO, chatGPT atm"
 Spirituality,general,general,To what extent do you consider yourself a spiritual person?,Not at all worthwhile,Very much so,need answer,"TODO, chatGPT atm"
-Mental Health,Emotion Regulation,general,"In the past 2 weeks, how often have strong emotions (stress, anger, sadness) stopped you from doing what you wanted to do?",never,very often,need answer,start with Emotion Regulation if this is lower than the similar Cognitive Control question?
+Mental Health,Emotion Regulation,general,"In the past 2 weeks, how often have strong emotions (stress, anger, sadness) stopped you from doing what you wanted to do?",very often,never,need answer,start with Emotion Regulation if this is lower than the similar Cognitive Control question?
 Mental Health,Emotion Regulation,general,How well can you notice and name what you are feeling in the moment?,never,always,need answer,
 Mental Health,Emotion Regulation,general,When I feel strong negative emotions I can respond in a balanced way instead of reacting impulsively,never,always,don't know,
 Mental Health,Emotion Regulation,Awareness & Labeling,"When I feel something strongly, I can quickly notice it and put it into words.",never,always,don't know,
 Mental Health,Emotion Regulation,Reappraisal ,"When a situation is upsetting, I can change how I look at it so it feels more manageable.",never,always,don't know,
 Mental Health,Emotion Regulation,Acceptance,I can stay with uncomfortable feelings without fighting them or needing to act on them.,never,always,don't know,
-Mental Health,Cognitive Control,general,"In the past 2 weeks, how often have distractions (phone, internet, wandering mind) stopped you from doing what you wanted to do?",never,very often,need answer,
+Mental Health,Cognitive Control,general,"In the past 2 weeks, how often have distractions (phone, internet, wandering mind) stopped you from doing what you wanted to do?",very often,never,need answer,
 Mental Health,Cognitive Control,general,"When you make a plan (work, personal), how often do you actually follow through?",never,always,need answer,
 Mental Health,Cognitive Control,Inhibitory Control,"I can resist temptations (like snacks, scrolling, or entertainment) when I want to focus on something else.",never,always,don't know,
 Mental Health,Cognitive Control,Goal Maintenance,"When I set a goal for a task, I can keep it in mind until it’s finished.",never,always,don't know,
 Mental Health,Cognitive Control,Sustained Attention,I can keep working on something important even when it feels boring.,never,always,don't know,
 Physical Health,Sleep,general,"Overall, in the past 2 weeks, how satisfied are you with your sleep?",not at all,very much,need answer,
 Physical Health,Sleep,general,"Over the past two weeks, how often did you wake up feeling rested and alert?",Never/Exhausted,Always/Refreshed,need answer,
-Physical Health,Sleep,circadian rhythm,How consistent were your usual bedtime and wake-up times (within about one hour)?,not consistent,very consistent,need answer,
-Physical Health,Sleep,circadian rhythm,"How often did you get daylight in the morning (e.g., going outside or near a bright window)?",never,every day,need answer,
-Physical Health,Sleep,Sleep quality,"On most mornings, how rested did you feel when you woke up?",not rested at all,very rested,need answer,
-Physical Health,Sleep,Sleep quality,How often did you wake in the night and struggle to fall back asleep?”,very often,never,need answer,reverse score would be better
-Physical Health,Sleep,alertness,How steady and alert did you feel through most of the day?,not at all,very much so,need answer,
-Physical Health,Sleep,alertness,"How often did you feel you might doze off if you sat quietly (e.g., in a meeting, reading)?",very often,never,need answer,reverse score
+Physical Health,Sleep,circadian rhythm,How consistent are your usual bedtime and wake-up times (within about one hour)?,not consistent,very consistent,need answer,
+Physical Health,Sleep,circadian rhythm,"How often do you get daylight in the morning (e.g., going outside or near a bright window)?",never,every day,need answer,
+Physical Health,Sleep,Sleep quality,"On most mornings, how rested do you feel when you wake up?",not rested at all,very rested,need answer,
+Physical Health,Sleep,Sleep quality,How often do you wake in the night and struggle to fall back asleep?,very often,never,need answer,reverse score would be better
+Physical Health,Sleep,alertness,How steady and alert do you feel through most of the day?,not at all,very much so,need answer,
+Physical Health,Sleep,alertness,"How often do you feel you would doze off if you sat quietly (e.g., in a meeting, reading)?",very often,never,need answer,reverse score
 Physical Health,Activity,general,"Overall, in the past 2 weeks, how satisfied are you with your physical activity?",not satisfied at all,very satisfied,need answer,
 Physical Health,Activity,general,"In the past 2 weeks, how much did your level of physical activity support your daily energy, sleep, and mood?",not at all,completely,need answer,
 Physical Health,Activity,Aerobic,"In the past 2 weeks, how often did you do activities that made you breathe faster (like brisk walking, cycling, running)?",never,daily,need answer,
 Physical Health,Activity,Strength,"In the past 2 weeks, how often did you do activities that made your muscles work against resistance (like weights, push-ups, heavy chores)?",never,daily,need answer,
 Physical Health,Activity,Sedentary Behaviour,"On a typical day in the past 2 weeks, how often did you break up long sitting periods by standing or moving at least once an hour?",almost never,every hour without fail,need answer,
+Social Relationships,Connection,Social Integration,How regularly do you spend time with friends or family who are important to you?,never,daily,need answer,
+Social Relationships,Connection,Emotional Support,I can count on my friends or family when things go wrong.,Strongly disagree,strongly agree,need answer,
+Social Relationships,Connection,Belonging,"Overall, how often do you feel lonely or socially isolated?",Always,Never,need answer,
+Social Relationships,Communication,Active Listening and Empathy,I listen carefully to others and try to understand their feelings and perspectives.,Never,Always,need answer,
+Social Relationships,Communication,Open and Honest Expression,I openly and honestly share my thoughts and feelings with people I trust.,Never,Always,need answer,
+Social Relationships,Boundaries,Assertive Limit-Setting,How comfortable are you saying no when you don’t want to do something?,not comfortable,very comfortable,need answer,
+Social Relationships,Boundaries,Enforcing Boundaries,"If a person in your life repeatedly disrespects your boundaries, are you confident you will enforce reasonable consequences?",not confident,very confident,need answer,
+Social Relationships,Boundaries,Personal Autonomy,How much do you stay true to your own needs and values in relationships?,not at all,very much so,need answer,
+Social Relationships,Boundaries,Emotional Boundaries,How often can you support others without feeling responsible for their emotions?,never,very often,need answer,

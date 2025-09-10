@@ -43,6 +43,8 @@ func HolisticPrompt(sortedDimensions []shared.CatVal, sortedFacets []shared.CatV
 		log.Fatal(err)
 	}
 
+	log.Printf("Received Prompt for holistic")
+
 	return sanitizedOutput
 }
 
@@ -62,9 +64,15 @@ func DimensionPrompt(dimensionName string, dimensionRatings string) string {
 		log.Fatal(err)
 	}
 
-	log.Println(resp.OutputText())
+	sanitizedOutput, err := sanitizeAndExtractJSON(resp.OutputText())
+	if err != nil {
+		// TODO try again here once or twice?
+		log.Fatal("json not valid", err)
+	}
 
-	return resp.OutputText()
+	log.Printf("Received Prompt for %s", dimensionName)
+
+	return sanitizedOutput
 
 }
 

@@ -51,6 +51,7 @@ type Facet struct {
 type Dimension struct {
 	SubDimensions    map[string]SubDimension `json:"sub_dimensions"`
 	GeneralQuestions []Question              `json:"general_questions"`
+	Rank             int                     `json:"rank,omitempty"`
 }
 
 type SubDimension struct {

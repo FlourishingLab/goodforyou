@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -66,7 +67,7 @@ func GetQuestions(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nextQuestions)
 }
 
-func SubmitResponses(w http.ResponseWriter, r *http.Request) {
+func (s *Server) SubmitResponses(w http.ResponseWriter, r *http.Request) {
 	var payload ResponsePayload
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -95,15 +96,22 @@ func SubmitResponses(w http.ResponseWriter, r *http.Request) {
 			go func(userID, dimName string, uaCopy db.UserAnswers) {
 				dimensionInsight := llm.DimensionPrompt(dimName, uaCopy.DimensionRatingsToString(dimName, questions.GetDimensions()))
 				db.UpcertInsight(userID, dimName, dimensionInsight)
+
+				s.Broker.Publish(InsightEvent{
+					Name:   dimName,
+					UserID: userID,
+					Data:   dimensionInsight,
+				})
+
 			}(ua.UserID, dimensionName, ua)
 		}
 	}
 
 }
 
-func GetInsightsLLM(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetInsightsLLM(w http.ResponseWriter, r *http.Request) {
 
-	log.Printf("Received request for topics with path: %s", r.URL.Path)
+	log.Printf("Received request for insights with path: %s", r.URL.Path)
 
 	// get userID from path
 	var userID string
@@ -121,12 +129,17 @@ func GetInsightsLLM(w http.ResponseWriter, r *http.Request) {
 		insights := map[string]string{}
 		insightsType := parts[5]
 		if insightsType == HOLISTIC {
-			sortedDims, sortedFacets := userAnswers.GetSorted(questions.GetQuestions())
+			sortedDims, sortedFacets := userAnswers.GetSorted(questions.GetQuestions(), questions.GetDimensions())
 			resp := llm.HolisticPrompt(sortedDims, sortedFacets)
 			insights = map[string]string{"holistic": resp}
 			db.UpcertInsight(userID, HOLISTIC, resp)
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]bool{"success": true})
+			s.Broker.Publish(InsightEvent{
+				Name:   HOLISTIC,
+				UserID: userID,
+				Data:   resp,
+			})
 		} else {
 			if userAnswers.HasInsight(HOLISTIC) {
 				insights[HOLISTIC] = string(userAnswers.GetInsight(HOLISTIC))
@@ -145,6 +158,69 @@ func GetInsightsLLM(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Invalid path: %s", r.URL.Path)
 		return
 	}
+}
+
+func (s *Server) InsightsStream(w http.ResponseWriter, r *http.Request) {
+
+	// Set http headers required for SSE
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	// get userID from path
+	var userID string
+	parts := strings.Split(r.URL.Path, "/")
+	// path: v1/insights/stream/USERID
+	if len(parts) >= 5 {
+		userID = parts[4]
+	} else {
+		http.Error(w, "invalid path", http.StatusBadRequest)
+		log.Printf("Invalid path: %s", r.URL.Path)
+		return
+	}
+
+	// Create a channel for client disconnection
+	clientGone := r.Context().Done()
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	// Send a comment line immediately so the connection is considered "active".
+	fmt.Fprintf(w, ": connected %s\n\n", time.Now().UTC().Format(time.RFC3339))
+	flusher.Flush()
+
+	heartbeat := time.NewTicker(15 * time.Second)
+	defer heartbeat.Stop()
+
+	sub := s.Broker.Subscribe(r.Context(), userID, 8)
+
+	for {
+		select {
+		case <-clientGone:
+			log.Println("Client disconnected")
+			return
+		case <-heartbeat.C:
+			// Send an event to the client
+			// Here we send only the "data" field, but there are few others
+			_, err := fmt.Fprintf(w, ": ping %d\n\n", time.Now().Unix())
+			if err != nil {
+				return
+			}
+			flusher.Flush()
+		case insightEvent, ok := <-sub.ch:
+			if !ok {
+				return
+			}
+			payload, _ := json.Marshal(insightEvent.Data)
+			fmt.Fprintf(w, "event: %s\n", insightEvent.Name)
+			fmt.Fprintf(w, "data: %s\n\n", payload)
+			flusher.Flush()
+		}
+	}
+
 }
 
 // ---------- Utilities ----------
