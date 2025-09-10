@@ -33,7 +33,6 @@ jobs:
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev -q
 
       - name: Build & push image
-        working-directory: backend   # <-- change if your Dockerfile is elsewhere
         run: |
           IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPO }}/${{ env.SERVICE }}:${{ github.sha }}"
           docker build -t "$IMAGE" .
