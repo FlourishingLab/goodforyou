@@ -9,6 +9,7 @@ import (
 	"user-db/shared"
 )
 
+// TODO make immutable?
 var dimensions map[string]shared.Dimension
 var dimensionQuestions []shared.Question
 var questions map[int]shared.Question
@@ -101,8 +102,8 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 	}
 
 	// Are general dimension questions answered
-	for i := range dimensionQuestions {
-		if userAnswer.GetLatestAnswer(i) == nil {
+	for _, v := range dimensionQuestions {
+		if userAnswer.GetLatestAnswer(v.ID) == nil {
 			return dimensionQuestions, nil
 		}
 	}
@@ -116,8 +117,8 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 		currentDimension := dimensions[dim.Name]
 
 		// Are general subdimension questions answered?
-		for i := range currentDimension.GeneralQuestions {
-			if userAnswer.GetLatestAnswer(i) == nil {
+		for _, v := range currentDimension.GeneralQuestions {
+			if userAnswer.GetLatestAnswer(v.ID) == nil {
 				return currentDimension.GeneralQuestions, nil
 			}
 		}
@@ -141,6 +142,31 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 	return []shared.Question{}, nil
 }
 
+func GetCompleteDimensions(ua db.UserAnswers) []string {
+
+	// create copy of dimensions map
+	dims := make(map[string]shared.Dimension)
+	for k, v := range dimensions {
+		//TODO temporarily remove dimensions without questions
+		if k != "Happiness & Life Satisfaction" &&
+			k != "Meaning & Purpose" &&
+			k != "Character & Virtue" &&
+			k != "Social Relationships" &&
+			k != "Material Stability" &&
+			k != "Spirituality" {
+			dims[k] = v
+		}
+	}
+
+	for i, v := range questions {
+		if ua.GetLatestAnswer(i) == nil {
+			delete(dims, v.Dimension)
+		}
+	}
+
+	return shared.GetKeysFromMap(dims)
+}
+
 func getFromFile() (*os.File, error) {
 	// for local testing only
 	const FILE_PATH = "questions/questions.csv"
@@ -153,12 +179,4 @@ func GetDimensions() map[string]shared.Dimension {
 
 func GetQuestions() map[int]shared.Question {
 	return questions
-}
-
-func mapToSlice(m map[int]shared.Question) []shared.Question {
-	var slice []shared.Question
-	for _, v := range m {
-		slice = append(slice, v)
-	}
-	return slice
 }

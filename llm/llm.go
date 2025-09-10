@@ -2,7 +2,10 @@ package llm
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"log"
+	"strings"
 	"user-db/shared"
 
 	"github.com/openai/openai-go"
@@ -19,7 +22,7 @@ func init() {
 
 }
 
-func Prompt(sortedDimensions []shared.CatVal, sortedFacets []shared.CatVal) string {
+func HolisticPrompt(sortedDimensions []shared.CatVal, sortedFacets []shared.CatVal) string {
 
 	params := responses.ResponseNewParams{
 		Prompt: responses.ResponsePromptParam{
@@ -27,6 +30,30 @@ func Prompt(sortedDimensions []shared.CatVal, sortedFacets []shared.CatVal) stri
 		},
 		Input: responses.ResponseNewParamsInputUnion{
 			OfString: param.Opt[string]{Value: "Response in JSON\ncategories:\n" + catValToString(sortedDimensions) + "\nweakest subcategories\n:" + catValToString(sortedFacets)},
+		},
+	}
+
+	resp, err := client.Responses.New(ctx, params)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	sanitizedOutput, err := sanitizeAndExtractJSON(resp.OutputText())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return sanitizedOutput
+}
+
+func DimensionPrompt(dimensionName string, dimensionRatings string) string {
+
+	params := responses.ResponseNewParams{
+		Prompt: responses.ResponsePromptParam{
+			ID: "pmpt_68b6a4fd9d048196b3acf60938dc10040d196830d567e556",
+		},
+		Input: responses.ResponseNewParamsInputUnion{
+			OfString: param.Opt[string]{Value: "Response in JSON, Focus on Dimension " + dimensionName + "\nRatings:\n" + dimensionRatings},
 		},
 	}
 
@@ -46,4 +73,32 @@ func catValToString(sortedCat []shared.CatVal) (result string) {
 		result += cv.ToString() + "\n"
 	}
 	return result
+}
+
+// SanitizeAndExtractJSON attempts to find and extract a valid JSON object or array from a string.
+// It's useful for cleaning up LLM responses that wrap JSON in markdown or other text.
+func sanitizeAndExtractJSON(raw string) (string, error) {
+	// First, check if the raw string is already valid JSON
+	if json.Valid([]byte(raw)) {
+		return raw, nil
+	}
+
+	// find the first {, neglect [ which would be valid JSON but not expected in this case
+	startBrace := strings.Index(raw, "{")
+	if startBrace == -1 {
+		return "", errors.New("no Brace found in the string. Is it a valid JSON?")
+	}
+
+	// Find the last closing brace
+	endBrace := strings.LastIndex(raw, "}")
+
+	// Extract the potential JSON substring
+	potentialJSON := raw[startBrace : endBrace+1]
+
+	// Validate the extracted substring
+	if json.Valid([]byte(potentialJSON)) {
+		return potentialJSON, nil
+	}
+
+	return "", errors.New("extracted string is not valid JSON")
 }

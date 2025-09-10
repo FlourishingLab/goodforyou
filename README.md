@@ -3,12 +3,15 @@
 
 ## TODO
 - add questions for other domains, 
-- logic to skip 'good' domains
-    - if they are significantly better than the weakest?
-    - do mental health always?
-    - multiple questionnaire pages
 
-- THere must be an easier way to get all these averages and stuff
+- Refactor. Clearer separation of concerns
+
+- if a dimension has all responses, create a site for it in insights tab
+  (- response endpoint signals if new insight (how to prevent wait?))
+  - create list of domains with insights in frontend
+
+
+- dimension http representation! "Meaning & Purpose" isn't good cause spaces and & character 
 
 - use database for answers
 - auth
@@ -17,6 +20,7 @@
 - is there a social connection bias in the prompt?
 
 
+- api - have user-id as a variable for all/most calls (not in path)
 - make mongodb connection string a secret (godotenv?)
 - implement history in database
 
@@ -29,11 +33,12 @@
 ### GET /v1/userid
 Generates and returns a user ID.
 
-### GET /v1/questions/USERID
+### GET /v1/questions/<dimension>
 Gets the next x (in this case 10) questions in order of priority of user with USERID
 
 ### POST /v1/responses
 expects answers to questions from a specified user
+side effect: if new responses lead to entirely answered dimension -> populate dimension insights
 Body:
 ```json
 {
@@ -45,10 +50,12 @@ Body:
 }
 ```
 
-### GET v1/topics/llm/USERID/x
-Get the content of topic with priority x.
-(for now make an LLM call to get customized details about the topic)
 
+### GET v1/insights/llm/<user-id>/holistic
+Insight considering all responses and all dimensions
+
+### GET v1/insights/llm/<user-id>/<dimension>
+Insights for one specific dimension
 
 
 ## Wording
@@ -71,3 +78,11 @@ go build -o admin cmd/admin/main.go
 # Run commands
 ./admin migrate         # Will ask for confirmation
 ```
+
+
+### Deploy
+
+```
+1. docker build --platform linux/amd64 -t stean4/goodforyou .
+2. docker push stean4/goodforyou
+3. create new revision on cloud run (https://console.cloud.google.com/run/detail/europe-west1/goodforyou/revisions?project=flourishing-lab) - this is probably not the best / smoothest way

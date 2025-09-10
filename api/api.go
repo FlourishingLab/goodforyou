@@ -13,6 +13,8 @@ import (
 	"user-db/shared"
 )
 
+var HOLISTIC string = "holistic"
+
 // ---------- Handlers ----------
 func HandleUserId(w http.ResponseWriter, r *http.Request) {
 
@@ -58,6 +60,8 @@ func GetQuestions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO, add this to db
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(nextQuestions)
 }
@@ -81,38 +85,66 @@ func SubmitResponses(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+
+	ua, _ := db.GetUser(payload.UserID)
+
+	completeDims := questions.GetCompleteDimensions(ua)
+
+	for _, dimensionName := range completeDims {
+		if !ua.HasInsight(dimensionName) {
+			go func(userID, dimName string, uaCopy db.UserAnswers) {
+				dimensionInsight := llm.DimensionPrompt(dimName, uaCopy.DimensionRatingsToString(dimName, questions.GetDimensions()))
+				db.UpcertInsight(userID, dimName, dimensionInsight)
+			}(ua.UserID, dimensionName, ua)
+		}
+	}
+
 }
 
-func GetTopicsLLM(w http.ResponseWriter, r *http.Request) {
+func GetInsightsLLM(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Received request for topics with path: %s", r.URL.Path)
 
 	// get userID from path
 	var userID string
 	parts := strings.Split(r.URL.Path, "/")
-	// path: v1/topics/llm/USERID/x
-	if len(parts) >= 5 {
+	// path: v1/insights/llm/USERID
+	if len(parts) >= 6 {
 		userID = parts[4]
+		userAnswers, exists := db.GetUser(userID)
+		if !exists {
+			http.Error(w, "user not found", http.StatusNotFound)
+			log.Printf("UserID not found: %s", userID)
+			return
+		}
+
+		insights := map[string]string{}
+		insightsType := parts[5]
+		if insightsType == HOLISTIC {
+			sortedDims, sortedFacets := userAnswers.GetSorted(questions.GetQuestions())
+			resp := llm.HolisticPrompt(sortedDims, sortedFacets)
+			insights = map[string]string{"holistic": resp}
+			db.UpcertInsight(userID, HOLISTIC, resp)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]bool{"success": true})
+		} else {
+			if userAnswers.HasInsight(HOLISTIC) {
+				insights[HOLISTIC] = string(userAnswers.GetInsight(HOLISTIC))
+			}
+			for dimensionName := range questions.GetDimensions() {
+				if userAnswers.HasInsight(dimensionName) {
+					insights[dimensionName] = string(userAnswers.GetInsight(dimensionName))
+				}
+			}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(insights)
+		}
+
 	} else {
-		http.Error(w, "invalid path", http.StatusBadRequest)
+		http.Error(w, "invalid path, expecting format 'v1/insights/llm/USERID/(DIMENSION|HOLISTIC)'", http.StatusBadRequest)
 		log.Printf("Invalid path: %s", r.URL.Path)
 		return
 	}
-
-	userAnswers, exists := db.GetUser(userID)
-	if !exists {
-		http.Error(w, "user not found", http.StatusNotFound)
-		log.Printf("UserID not found: %s", userID)
-		return
-	}
-
-	sortedDims, sortedFacets := questions.GetSorted(userAnswers)
-
-	llmResponse := llm.Prompt(sortedDims, sortedFacets)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(llmResponse)
-
 }
 
 // ---------- Utilities ----------

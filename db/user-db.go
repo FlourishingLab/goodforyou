@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
 	"strconv"
@@ -46,6 +47,7 @@ func NewUser(userid string) {
 	var userAnswers UserAnswers
 	userAnswers.UserID = userid
 	userAnswers.Answers = make(map[int]QuestionAnswers)
+	userAnswers.Insights = make(map[string]Insight)
 
 	result, err := collection.InsertOne(context.TODO(), userAnswers)
 	if err != nil {
@@ -64,6 +66,7 @@ func GetUser(userID string) (UserAnswers, bool) {
 		log.Printf("No user found with ID: %s", userID)
 		return UserAnswers{}, false
 	} else if err != nil {
+		// TODO handle more gracefully
 		panic(err)
 	}
 	return result, true
@@ -102,6 +105,31 @@ func UpsertAnswer(userid string, questionID int, kind shared.AnswerKind, value i
 		log.Panic(err)
 		return err
 	}
-	log.Printf("Matched %d documents and updated %d documents.", result.MatchedCount, result.ModifiedCount)
+	log.Printf("UpcertAnswer: Matched %d documents and updated %d documents.", result.MatchedCount, result.ModifiedCount)
+	return err
+}
+
+func UpcertInsight(userid string, insightsName, insightBlob string) error {
+
+	insight := Insight{
+		InsightJson: json.RawMessage(insightBlob),
+	}
+
+	insightsPath := "insights." + insightsName
+
+	filter := bson.M{"userid": userid}
+	update := bson.M{
+		"$set": bson.M{
+			insightsPath: insight,
+		}}
+
+	coll := client.Database(DATABASE_NAME).Collection(USERANSWERS)
+
+	result, err := coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Panic(err)
+		return err
+	}
+	log.Printf("UpcertInsight: Matched %d documents and updated %d documents.", result.MatchedCount, result.ModifiedCount)
 	return err
 }
