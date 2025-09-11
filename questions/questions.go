@@ -21,8 +21,8 @@ var dimensionOrder map[string]int = map[string]int{
 	"Social Relationships": 3,
 	"Character & Virtue":   4,
 	"Meaning & Purpose":    5,
-	"Material Stability":   6,
-	"Spirituality":         7,
+	"Spirituality":         6,
+	"Material Stability":   7,
 }
 
 func init() {
@@ -169,10 +169,7 @@ func GetCompleteDimensions(ua db.UserAnswers) []string {
 	for k, v := range dimensions {
 		//TODO temporarily remove dimensions without questions
 		if k != "Happiness & Life Satisfaction" &&
-			k != "Meaning & Purpose" &&
-			k != "Character & Virtue" &&
-			k != "Material Stability" &&
-			k != "Spirituality" {
+			k != "Character & Virtue" {
 			dims[k] = v
 		}
 	}
