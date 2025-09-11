@@ -32,9 +32,9 @@ type Broker struct {
 	cmds chan cmd
 }
 
-// NewBroker starts a single goroutine that owns the subscriber maps (no mutex needed).
+// NewBroker starts a single goroutine that owns the subscriber maps.
 func NewBroker(buffer int) *Broker {
-	b := &Broker{cmds: make(chan cmd, 1024)}
+	b := &Broker{cmds: make(chan cmd, buffer)}
 	subs := map[string]map[*Subscriber]struct{}{}
 
 	go func() {
@@ -57,7 +57,7 @@ func NewBroker(buffer int) *Broker {
 				for s := range subs[c.ev.UserID] {
 					select {
 					case s.ch <- c.ev:
-					default: // drop if slow (prototype-friendly)
+					default: // drop if slow
 					}
 				}
 			}

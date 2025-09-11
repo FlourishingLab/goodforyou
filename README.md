@@ -17,9 +17,6 @@
 - auth
     - use mongodb _id as uuid?
 
-- is there a social connection bias in the prompt?
-
-
 - api - have user-id as a variable for all/most calls (not in path)
 - make mongodb connection string a secret (godotenv?)
 - implement history in database
@@ -81,8 +78,4 @@ go build -o admin cmd/admin/main.go
 
 
 ### Deploy
-
-```
-1. docker build --platform linux/amd64 -t stean4/goodforyou .
-2. docker push stean4/goodforyou
-3. create new revision on cloud run (https://console.cloud.google.com/run/detail/europe-west1/goodforyou/revisions?project=flourishing-lab) - this is probably not the best / smoothest way
+Cloud Run is connected to the repo and is pulling, building and deploying new builds automatically

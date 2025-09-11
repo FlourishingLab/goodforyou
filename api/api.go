@@ -17,7 +17,7 @@ import (
 var HOLISTIC string = "holistic"
 
 // ---------- Handlers ----------
-func HandleUserId(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleUserId(w http.ResponseWriter, r *http.Request) {
 
 	// get userID from path
 	var userID string
@@ -41,7 +41,7 @@ func HandleUserId(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"userId": userID})
 }
 
-func GetQuestions(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetQuestions(w http.ResponseWriter, r *http.Request) {
 
 	// get userID from path
 	var userID string
@@ -225,10 +225,9 @@ func (s *Server) InsightsStream(w http.ResponseWriter, r *http.Request) {
 
 // ---------- Utilities ----------
 
-// TODO before production
-func WithCors(h http.HandlerFunc) http.HandlerFunc {
+func WithCors(h http.HandlerFunc, corsOrigin string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Replace * with your frontend's origin in production
+		w.Header().Set("Access-Control-Allow-Origin", corsOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 

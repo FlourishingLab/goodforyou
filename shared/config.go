@@ -1,0 +1,33 @@
+package shared
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+type Config struct {
+	Environment string `json:"environment"`
+	CorsOrigin  string `json:"cors_origin"`
+}
+
+func LoadConfig() (*Config, error) {
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "dev" // Default to development if APP_ENV is not set
+	}
+
+	configFile := fmt.Sprintf("%s.json", env)
+	file, err := os.Open(configFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open config file: %w", err)
+	}
+	defer file.Close()
+
+	var cfg Config
+	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse config file: %w", err)
+	}
+
+	return &cfg, nil
+}
