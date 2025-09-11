@@ -1,5 +1,4 @@
 Happiness & Life Satisfaction,general,general,"Overall, how satisfied are you with life as a whole these days?",Not satisfied,Completely satisfied,need answer,
-Happiness & Life Satisfaction,general,general,"In general, how happy or unhappy do you usually feel?",Extremely unhappy,Extremely happy,need answer,
 Physical Health,general,general,"In general, how would you rate your physical health?",Poor,Excellent,need answer,
 Physical Health,general,general,"In general, how would you rate your energy level for daily activities?",super low energy,super high energy,need answer,
 Mental Health,general,general,"In general, how well are you able to handle stress and emotional challenges in daily life?",Poor,Excellent,need answer,
@@ -11,30 +10,19 @@ Character & Virtue,general,general,I am always able to give up some happiness no
 Social Relationships,general,general,I am content with my friendships and relationships.,Strongly disagree,Strongly agree,need answer,
 Social Relationships,general,general,My relationships are as satisfying as I would want them to be.,Strongly disagree,Strongly agree,need answer,
 Material Stability,general,general,How often do you worry about being able to meet normal monthly living expenses?,Worry all the time,Do not ever worry,need answer,
-Material Stability,general,general,"How often do you worry about safety, food or housing?",Worry all the time,Do not ever worry,need answer,
-Spirituality,general,general,"How often do you experience a deep sense of connection to something greater than yourself — such as nature, humanity, life, the universe, or the divine?",Never,Always,need answer,"TODO, chatGPT atm"
-Spirituality,general,general,To what extent do you consider yourself a spiritual person?,Not at all worthwhile,Very much so,need answer,"TODO, chatGPT atm"
-Mental Health,Emotion Regulation,general,"In the past 2 weeks, how often have strong emotions (stress, anger, sadness) stopped you from doing what you wanted to do?",very often,never,need answer,start with Emotion Regulation if this is lower than the similar Cognitive Control question?
-Mental Health,Emotion Regulation,general,How well can you notice and name what you are feeling in the moment?,never,always,need answer,
-Mental Health,Emotion Regulation,general,When I feel strong negative emotions I can respond in a balanced way instead of reacting impulsively,never,always,don't know,
+Spirituality,general,general,"How often do you experience a deep sense of connection to something greater than yourself - such as nature, humanity, life, the universe, or the divine?",Never,Always,need answer,"TODO, chatGPT atm"
 Mental Health,Emotion Regulation,Awareness & Labeling,"When I feel something strongly, I can quickly notice it and put it into words.",never,always,don't know,
 Mental Health,Emotion Regulation,Reappraisal ,"When a situation is upsetting, I can change how I look at it so it feels more manageable.",never,always,don't know,
 Mental Health,Emotion Regulation,Acceptance,I can stay with uncomfortable feelings without fighting them or needing to act on them.,never,always,don't know,
-Mental Health,Cognitive Control,general,"In the past 2 weeks, how often have distractions (phone, internet, wandering mind) stopped you from doing what you wanted to do?",very often,never,need answer,
-Mental Health,Cognitive Control,general,"When you make a plan (work, personal), how often do you actually follow through?",never,always,need answer,
 Mental Health,Cognitive Control,Inhibitory Control,"I can resist temptations (like snacks, scrolling, or entertainment) when I want to focus on something else.",never,always,don't know,
 Mental Health,Cognitive Control,Goal Maintenance,"When I set a goal for a task, I can keep it in mind until it’s finished.",never,always,don't know,
 Mental Health,Cognitive Control,Sustained Attention,I can keep working on something important even when it feels boring.,never,always,don't know,
-Physical Health,Sleep,general,"Overall, in the past 2 weeks, how satisfied are you with your sleep?",not at all,very much,need answer,
-Physical Health,Sleep,general,"Over the past two weeks, how often did you wake up feeling rested and alert?",Never/Exhausted,Always/Refreshed,need answer,
 Physical Health,Sleep,circadian rhythm,How consistent are your usual bedtime and wake-up times (within about one hour)?,not consistent,very consistent,need answer,
 Physical Health,Sleep,circadian rhythm,"How often do you get daylight in the morning (e.g., going outside or near a bright window)?",never,every day,need answer,
 Physical Health,Sleep,Sleep quality,"On most mornings, how rested do you feel when you wake up?",not rested at all,very rested,need answer,
 Physical Health,Sleep,Sleep quality,How often do you wake in the night and struggle to fall back asleep?,very often,never,need answer,reverse score would be better
 Physical Health,Sleep,alertness,How steady and alert do you feel through most of the day?,not at all,very much so,need answer,
 Physical Health,Sleep,alertness,"How often do you feel you would doze off if you sat quietly (e.g., in a meeting, reading)?",very often,never,need answer,reverse score
-Physical Health,Activity,general,"Overall, in the past 2 weeks, how satisfied are you with your physical activity?",not satisfied at all,very satisfied,need answer,
-Physical Health,Activity,general,"In the past 2 weeks, how much did your level of physical activity support your daily energy, sleep, and mood?",not at all,completely,need answer,
 Physical Health,Activity,Aerobic,"In the past 2 weeks, how often did you do activities that made you breathe faster (like brisk walking, cycling, running)?",never,daily,need answer,
 Physical Health,Activity,Strength,"In the past 2 weeks, how often did you do activities that made your muscles work against resistance (like weights, push-ups, heavy chores)?",never,daily,need answer,
 Physical Health,Activity,Sedentary Behaviour,"On a typical day in the past 2 weeks, how often did you break up long sitting periods by standing or moving at least once an hour?",almost never,every hour without fail,need answer,
@@ -47,3 +35,16 @@ Social Relationships,Boundaries,Assertive Limit-Setting,How comfortable are you 
 Social Relationships,Boundaries,Enforcing Boundaries,"If a person in your life repeatedly disrespects your boundaries, are you confident you will enforce reasonable consequences?",not confident,very confident,need answer,
 Social Relationships,Boundaries,Personal Autonomy,How much do you stay true to your own needs and values in relationships?,not at all,very much so,need answer,
 Social Relationships,Boundaries,Emotional Boundaries,How often can you support others without feeling responsible for their emotions?,never,very often,need answer,
+Meaning & Purpose,Values & Authenticity,Values Clarity,How clear are your top personal values?,Not clear,very clear,need answer,"This is the base of the Subdimension as Emotion Awareness is the base for Emotion Regulation. If this is low, go and work with this and not ask any more ?"
+Meaning & Purpose,Values & Authenticity,Values–Action Congruence,"In the past 2 weeks, how often did your actions match your values?",never,always,need answer,
+Meaning & Purpose,Values & Authenticity,Courageous Authenticity,"When a choice was uncomfortable but aligned with your values, how often did you choose it?",never,always,need answer,
+Meaning & Purpose,Values & Authenticity,Identity Coherence,How clearly do you feel you know who you are and what you stand for?,not clear,very clear,need answer,
+Spirituality,Awe & Transcendence,Connection ,How often do you feel connected to something larger than yourself?,never,very often,need answer,
+Spirituality,Awe & Transcendence,Wonder,How often did you feel a sense of awe or wonder in the past 2 weeks?,never,very often,need answer,
+Spirituality,Awe & Transcendence,Contemplation,"How regularly do you practice something (like meditation, prayer, or reflection) that helps you feel grounded or connected?",never,very often,need answer,
+Spirituality,Awe & Transcendence,Guiding Beliefs,How strongly do you feel guided by spiritual or transcendent values or beliefs in daily life?,never,very often,need answer,
+Material Stability,Financial Planning,Cashflow Plan & Tracking,How clearly did you know where your money went and follow a plan in the past month?,not clear at all,very clear,need answer,
+Material Stability,Financial Planning,Payments Reliability,How consistently were all your bills paid on time in the past month?,always late,always on-time,need answer,
+Material Stability,Financial Planning,Liquidity,"Right now, how confident are you that you could cover one month of essential expenses from savings without new debt?",not confident at all,very confident,need answer,
+Material Stability,Financial Planning,Debt Management,If you have debt: how consistently are you following a clear plan to reduce it?,never,always / not debt,does not apply,This only applies to people with debt!
+Material Stability,Financial Planning,Saving & Investing,How consistently are you setting aside money for future needs or goals?,never,always,need answer,
