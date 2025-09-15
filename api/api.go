@@ -255,6 +255,8 @@ func WithCORS(allowedOrigins []string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
 
+			log.Printf("CORS: Request from origin: %s, allowed: %v", origin, allowedOrigins)
+
 			// Always vary on these so caches behave
 			w.Header().Add("Vary", "Origin")
 			w.Header().Add("Vary", "Access-Control-Request-Method")
@@ -268,9 +270,12 @@ func WithCORS(allowedOrigins []string) func(http.Handler) http.Handler {
 				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 				// Optional: cache preflight
 				w.Header().Set("Access-Control-Max-Age", "86400")
+			} else {
+				log.Printf("CORS: Origin %s NOT allowed", origin)
 			}
 
 			if r.Method == http.MethodOptions {
+				log.Printf("CORS: Handling preflight request")
 				// Preflight response
 				w.WriteHeader(http.StatusNoContent)
 				return
