@@ -23,6 +23,9 @@ FROM gcr.io/distroless/static-debian12
 # Copy the compiled binary from the builder stage
 COPY --from=builder /server /server
 COPY questions/questions.csv /questions/questions.csv
+COPY config/prod.json /config/prod.json
+
+ENV APP_ENV=prod
 
 # Google Cloud Run sets the PORT environment variable, which defaults to 8080.
 # Your application should listen on this port.
