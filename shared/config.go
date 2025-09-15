@@ -3,6 +3,7 @@ package shared
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -28,6 +29,8 @@ func LoadConfig() (*Config, error) {
 	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
+
+	log.Printf("Loaded config with origins: %s", cfg.CorsOrigins)
 
 	return &cfg, nil
 }
