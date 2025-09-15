@@ -17,9 +17,6 @@
 - auth
     - use mongodb _id as uuid?
 
-- is there a social connection bias in the prompt?
-
-
 - api - have user-id as a variable for all/most calls (not in path)
 - make mongodb connection string a secret (godotenv?)
 - implement history in database
@@ -37,12 +34,11 @@ Generates and returns a user ID.
 Gets the next x (in this case 10) questions in order of priority of user with USERID
 
 ### POST /v1/responses
-expects answers to questions from a specified user
+expects answers to questions from a specified user (in cookie)
 side effect: if new responses lead to entirely answered dimension -> populate dimension insights
 Body:
 ```json
 {
-    "userId": "eoXTTT9A",
     "answers": [
         {"questionId": 1, "value":3},
         {"questionId": 2, "value":9}
@@ -51,11 +47,11 @@ Body:
 ```
 
 
-### GET v1/insights/llm/<user-id>/holistic
-Insight considering all responses and all dimensions
+### GET v1/insights/llm/generate/holistic
+executes holistic prompt
 
-### GET v1/insights/llm/<user-id>/<dimension>
-Insights for one specific dimension
+### GET v1/insights/llm
+returns all insights for a user
 
 
 ## Wording
@@ -81,8 +77,4 @@ go build -o admin cmd/admin/main.go
 
 
 ### Deploy
-
-```
-1. docker build --platform linux/amd64 -t stean4/goodforyou .
-2. docker push stean4/goodforyou
-3. create new revision on cloud run (https://console.cloud.google.com/run/detail/europe-west1/goodforyou/revisions?project=flourishing-lab) - this is probably not the best / smoothest way
+Cloud Run is connected to the repo and is pulling, building and deploying new builds automatically

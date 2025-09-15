@@ -4,13 +4,13 @@ import (
 	"encoding/csv"
 	"errors"
 	"log"
+	"maps"
 	"os"
 
 	"user-db/db"
 	"user-db/shared"
 )
 
-// TODO make immutable? const?
 var dimensions map[string]shared.Dimension
 var dimensionQuestions []shared.Question
 var questions map[int]shared.Question
@@ -106,16 +106,15 @@ func loadQuestionsCSV() error {
 
 		dimensions[question.Dimension] = dimension
 	}
-
 	return nil
 }
 
 func GetNextQuestions(userId string) ([]shared.Question, error) {
 
 	// need answered questions
-	userAnswer, exist := db.GetUser(userId)
-	if !exist {
-		return nil, errors.New("user not found")
+	userAnswer, err := db.GetUser(userId)
+	if err != nil {
+		return nil, err
 	}
 
 	// Are general dimension questions answered
@@ -126,12 +125,12 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 	}
 
 	// All general dimension questions answered, sort them
-	sortedDimQ := userAnswer.SortByDimension(dimensionQuestions, dimensions)
+	sortedDimQ := userAnswer.SortByDimension(dimensionQuestions, GetDimensions())
 
 	// start with the lowest Dimension
 	for _, dim := range sortedDimQ {
 
-		currentDimension := dimensions[dim.Name]
+		currentDimension := GetDimensions()[dim.Name]
 
 		// Are general subdimension questions answered?
 		for _, v := range currentDimension.GeneralQuestions {
@@ -158,7 +157,6 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 			}
 		}
 	}
-
 	return []shared.Question{}, nil
 }
 
@@ -184,15 +182,20 @@ func GetCompleteDimensions(ua db.UserAnswers) []string {
 }
 
 func getFromFile() (*os.File, error) {
-	// for local testing only
 	const FILE_PATH = "questions/questions.csv"
 	return os.Open(FILE_PATH)
 }
 
 func GetDimensions() map[string]shared.Dimension {
-	return dimensions
+	// Return a copy of the dimensions map
+	copy := make(map[string]shared.Dimension, len(dimensions))
+	maps.Copy(copy, dimensions)
+	return copy
 }
 
 func GetQuestions() map[int]shared.Question {
-	return questions
+	// Return a copy of the questions map
+	copy := make(map[int]shared.Question, len(questions))
+	maps.Copy(copy, questions)
+	return copy
 }

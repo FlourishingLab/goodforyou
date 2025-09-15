@@ -70,9 +70,9 @@ func addAnswer(args []string) {
 
 func getAnswersForUser(userId string) {
 
-	userAnswers, exists := db.GetUser(userId)
-	if !exists {
-		fmt.Printf("User with ID %s does not exist.\n", userId)
+	userAnswers, err := db.GetUser(userId)
+	if err != nil {
+		log.Printf("Error getting user: %s", userId)
 		os.Exit(1)
 	}
 	log.Printf("UserAnswers for user %s: %v", userId, userAnswers)

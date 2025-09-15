@@ -13,3 +13,5 @@ user-db
 
 # Ignore generated credentials from google-github-actions/auth
 gha-creds-*.json/Users/stephanhorsthemke/dev/flourish/frontend/flourish/.github/workflows/deploy.yml
+
+__debug*

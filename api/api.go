@@ -1,12 +1,13 @@
 package api
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
-	"strings"
+	"slices"
 	"time"
 	"user-db/db"
 	"user-db/llm"
@@ -14,54 +15,68 @@ import (
 	"user-db/shared"
 )
 
-var HOLISTIC string = "holistic"
+const HOLISTIC string = "holistic"
+const COOKIENAME string = "uid"
 
-// ---------- Handlers ----------
-func HandleUserId(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ResetUser(w http.ResponseWriter, r *http.Request) {
 
-	// get userID from path
-	var userID string
-	parts := strings.Split(r.URL.Path, "/")
-	// it always seems to have at least 4 parts: "", "v1", "userid", ""
-	log.Print(parts)
-	if len(parts) == 4 {
-		userID = parts[3]
-		// check if userID exists
-		if _, exists := db.GetUser(userID); !exists {
-			log.Printf("userID not found: %s", userID)
-			userID = generateUserID()
-			db.NewUser(userID)
-		}
-	} else {
-		http.Error(w, "invalid path", http.StatusBadRequest)
-		log.Printf("Invalid path: %s", r.URL.Path)
-		return
-	}
+	// Delete the cookie by setting MaxAge to -1 and Expires to a past date
+	http.SetCookie(w, &http.Cookie{
+		Name:     COOKIENAME,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1, // This expires the cookie immediately
+		Expires:  time.Unix(0, 0),
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"userId": userID})
+	json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
 
-func GetQuestions(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetUserId(w http.ResponseWriter, r *http.Request) {
 
-	// get userID from path
-	var userID string
-	parts := strings.Split(r.URL.Path, "/")
-	// path: v1/questions/USERID
-	if len(parts) >= 4 {
-		userID = parts[3]
-	} else {
-		http.Error(w, "invalid path", http.StatusBadRequest)
-		log.Printf("Invalid path: %s", r.URL.Path)
-		return
+	uid := getUid(r)
+	if uid == "" {
+		var err error
+		uid, err = randomID(16) // 128-bit
+		if err != nil {
+			log.Printf("Error generating new user uid: %s", uid)
+			return
+		}
+		err = db.NewUser(uid)
+		if err != nil {
+			log.Printf("Not able to create user with ID: %s", uid)
+			return
+		}
+
+		log.Printf("Created new user with ID: %s", uid)
+		http.SetCookie(w, &http.Cookie{
+			Name:     COOKIENAME,
+			Value:    uid,
+			Path:     "/",
+			MaxAge:   31536000, // 1 year
+			Secure:   true,     // set true in HTTPS
+			HttpOnly: true,
+			SameSite: http.SameSiteLaxMode,
+		})
 	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{COOKIENAME: uid})
+}
 
-	nextQuestions, err := questions.GetNextQuestions(userID)
+func (s *Server) GetQuestions(w http.ResponseWriter, r *http.Request) {
+
+	uid := getUid(r)
+
+	nextQuestions, err := questions.GetNextQuestions(uid)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Could not get questions: %s", err)
 		return
 	}
-
-	// TODO, add this to db
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(nextQuestions)
@@ -71,31 +86,52 @@ func (s *Server) SubmitResponses(w http.ResponseWriter, r *http.Request) {
 	var payload ResponsePayload
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Printf("Failed trying to decode paypload: %s", err)
 		return
 	}
+
+	uid := getUid(r)
 
 	for _, answer := range payload.Answers {
 		kind, err := shared.ToAnswerKind(answer.Kind)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Printf("Failed trying to convert answer kind: %s", err)
 			return
 		}
 		// TODO Insert Many. This is not atomic
-		db.UpsertAnswer(payload.UserID, answer.QuestionID, kind, answer.Value)
+		err = db.UpsertAnswer(uid, answer.QuestionID, kind, answer.Value)
+		if err != nil {
+			log.Printf("Failed trying to upsert answer %d with error: %s", answer.QuestionID, err)
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})
 
-	ua, _ := db.GetUser(payload.UserID)
+	ua, err := db.GetUser(uid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("Failed trying to get user: %s", err)
+		return
+	}
 
 	completeDims := questions.GetCompleteDimensions(ua)
 
 	for _, dimensionName := range completeDims {
-		if !ua.HasInsight(dimensionName) {
+		if ua.NeedsInsight(dimensionName) {
 			go func(userID, dimName string, uaCopy db.UserAnswers) {
+				err := db.UpsertInsight(userID, dimName, "", db.GENERATING)
+				if err != nil {
+					log.Printf("Failed trying to upsert insight: %s", err)
+					return
+				}
 				dimensionInsight := llm.DimensionPrompt(dimName, uaCopy.DimensionRatingsToString(dimName, questions.GetDimensions()))
-				db.UpcertInsight(userID, dimName, dimensionInsight)
+				err = db.UpsertInsight(userID, dimName, dimensionInsight, db.DONE)
+				if err != nil {
+					log.Printf("Failed trying to upsert insight: %s", err)
+					return
+				}
 
 				s.Broker.Publish(InsightEvent{
 					Name:   dimName,
@@ -103,61 +139,62 @@ func (s *Server) SubmitResponses(w http.ResponseWriter, r *http.Request) {
 					Data:   dimensionInsight,
 				})
 
-			}(ua.UserID, dimensionName, ua)
+			}(uid, dimensionName, ua)
 		}
 	}
+}
+
+func (s *Server) GenerateHolistic(w http.ResponseWriter, r *http.Request) {
+
+	uid := getUid(r)
+
+	userAnswers, err := db.GetUser(uid)
+	if err != nil {
+		log.Printf("error getting user: %s", uid)
+		return
+	}
+
+	sortedDims, sortedFacets := userAnswers.GetSorted(questions.GetQuestions(), questions.GetDimensions())
+	resp := llm.HolisticPrompt(sortedDims, sortedFacets)
+
+	err = db.UpsertInsight(uid, HOLISTIC, resp, db.DONE)
+	if err != nil {
+		log.Printf("Failed trying to upsert insight: %s", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	s.Broker.Publish(InsightEvent{
+		Name:   HOLISTIC,
+		UserID: uid,
+		Data:   resp,
+	})
 
 }
 
 func (s *Server) GetInsightsLLM(w http.ResponseWriter, r *http.Request) {
 
-	log.Printf("Received request for insights with path: %s", r.URL.Path)
+	uid := getUid(r)
 
-	// get userID from path
-	var userID string
-	parts := strings.Split(r.URL.Path, "/")
-	// path: v1/insights/llm/USERID
-	if len(parts) >= 6 {
-		userID = parts[4]
-		userAnswers, exists := db.GetUser(userID)
-		if !exists {
-			http.Error(w, "user not found", http.StatusNotFound)
-			log.Printf("UserID not found: %s", userID)
-			return
-		}
-
-		insights := map[string]string{}
-		insightsType := parts[5]
-		if insightsType == HOLISTIC {
-			sortedDims, sortedFacets := userAnswers.GetSorted(questions.GetQuestions(), questions.GetDimensions())
-			resp := llm.HolisticPrompt(sortedDims, sortedFacets)
-			insights = map[string]string{"holistic": resp}
-			db.UpcertInsight(userID, HOLISTIC, resp)
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]bool{"success": true})
-			s.Broker.Publish(InsightEvent{
-				Name:   HOLISTIC,
-				UserID: userID,
-				Data:   resp,
-			})
-		} else {
-			if userAnswers.HasInsight(HOLISTIC) {
-				insights[HOLISTIC] = string(userAnswers.GetInsight(HOLISTIC))
-			}
-			for dimensionName := range questions.GetDimensions() {
-				if userAnswers.HasInsight(dimensionName) {
-					insights[dimensionName] = string(userAnswers.GetInsight(dimensionName))
-				}
-			}
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(insights)
-		}
-
-	} else {
-		http.Error(w, "invalid path, expecting format 'v1/insights/llm/USERID/(DIMENSION|HOLISTIC)'", http.StatusBadRequest)
-		log.Printf("Invalid path: %s", r.URL.Path)
+	userAnswers, err := db.GetUser(uid)
+	if err != nil {
+		log.Printf("error getting user: %s", uid)
 		return
 	}
+
+	insights := map[string]string{}
+
+	if userAnswers.HasInsight(HOLISTIC) {
+		insights[HOLISTIC] = string(userAnswers.GetInsight(HOLISTIC))
+	}
+	for dimensionName := range questions.GetDimensions() {
+		if userAnswers.HasInsight(dimensionName) {
+			insights[dimensionName] = string(userAnswers.GetInsight(dimensionName))
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(insights)
 }
 
 func (s *Server) InsightsStream(w http.ResponseWriter, r *http.Request) {
@@ -167,24 +204,14 @@ func (s *Server) InsightsStream(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	// get userID from path
-	var userID string
-	parts := strings.Split(r.URL.Path, "/")
-	// path: v1/insights/stream/USERID
-	if len(parts) >= 5 {
-		userID = parts[4]
-	} else {
-		http.Error(w, "invalid path", http.StatusBadRequest)
-		log.Printf("Invalid path: %s", r.URL.Path)
-		return
-	}
-
+	uid := getUid(r)
 	// Create a channel for client disconnection
 	clientGone := r.Context().Done()
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "streaming unsupported", http.StatusInternalServerError)
+		log.Printf("Streaming unsupported for uid(%s), user-agent (%s)", uid, r.UserAgent())
 		return
 	}
 
@@ -195,7 +222,7 @@ func (s *Server) InsightsStream(w http.ResponseWriter, r *http.Request) {
 	heartbeat := time.NewTicker(15 * time.Second)
 	defer heartbeat.Stop()
 
-	sub := s.Broker.Subscribe(r.Context(), userID, 8)
+	sub := s.Broker.Subscribe(r.Context(), uid, 8)
 
 	for {
 		select {
@@ -207,6 +234,7 @@ func (s *Server) InsightsStream(w http.ResponseWriter, r *http.Request) {
 			// Here we send only the "data" field, but there are few others
 			_, err := fmt.Fprintf(w, ": ping %d\n\n", time.Now().Unix())
 			if err != nil {
+				log.Printf("Error writing heartbeat: %s", err)
 				return
 			}
 			flusher.Flush()
@@ -214,9 +242,7 @@ func (s *Server) InsightsStream(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				return
 			}
-			payload, _ := json.Marshal(insightEvent.Data)
 			fmt.Fprintf(w, "event: %s\n", insightEvent.Name)
-			fmt.Fprintf(w, "data: %s\n\n", payload)
 			flusher.Flush()
 		}
 	}
@@ -224,32 +250,52 @@ func (s *Server) InsightsStream(w http.ResponseWriter, r *http.Request) {
 }
 
 // ---------- Utilities ----------
+func WithCORS(allowedOrigins []string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			origin := r.Header.Get("Origin")
 
-// TODO before production
-func WithCors(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Replace * with your frontend's origin in production
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			// Always vary on these so caches behave
+			w.Header().Add("Vary", "Origin")
+			w.Header().Add("Vary", "Access-Control-Request-Method")
+			w.Header().Add("Vary", "Access-Control-Request-Headers")
 
-		// Handle preflight
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
+			// Reflect a permitted origin (must NOT be *)
+			if origin != "" && slices.Contains(allowedOrigins, origin) {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+				// Optional: cache preflight
+				w.Header().Set("Access-Control-Max-Age", "86400")
+			}
 
-		h(w, r)
+			if r.Method == http.MethodOptions {
+				// Preflight response
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
 	}
 }
 
-func generateUserID() string {
-	rand.New(rand.NewSource(time.Now().UnixNano()))
-	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, 8)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+func randomID(n int) (string, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
 	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
 
-	log.Printf("Generated UserID: %s", string(b))
-	return string(b)
+func getUid(r *http.Request) string {
+	var uid string
+	if c, err := r.Cookie(COOKIENAME); err != nil {
+		// TODO check for cookie not found error otherwise handle error differently
+		return ""
+	} else {
+		uid = c.Value
+	}
+	return uid
 }

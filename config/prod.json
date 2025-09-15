@@ -1,0 +1,4 @@
+{
+    "environment": "prod",
+    "cors_origin": ["https://flourishinglab.app", "https://flourishinglab-dbca3.web.app", "https://flourishinglab-dbca3.firebaseapp.com"]
+}
