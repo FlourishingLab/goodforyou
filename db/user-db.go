@@ -49,11 +49,10 @@ func NewUser(userid string) error {
 	userAnswers.Answers = make(map[int]QuestionAnswers)
 	userAnswers.Insights = make(map[string]Insight)
 
-	result, err := collection.InsertOne(context.TODO(), userAnswers)
+	_, err := collection.InsertOne(context.TODO(), userAnswers)
 	if err != nil {
 		return err
 	}
-	log.Printf("Inserted new user %s", result.InsertedID)
 	return nil
 }
 

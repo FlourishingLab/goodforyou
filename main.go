@@ -20,13 +20,13 @@ func main() {
 		Broker: api.NewBroker(1024),
 	}
 	// Wrap handlers with CORS middleware and user middleware
-	http.Handle("/v1/user/reset", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(api.WithUser(s.ResetUser))))
-	http.Handle("/v1/user/id", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(api.WithUser(s.GetUserId))))
-	http.Handle("/v1/questions", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(api.WithUser(s.GetQuestions))))
-	http.Handle("/v1/responses", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(api.WithUser(s.SubmitResponses))))
-	http.Handle("/v1/insights/llm/generate/holistic", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(api.WithUser(s.GenerateHolistic))))
-	http.Handle("/v1/insights/llm", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(api.WithUser(s.GetInsightsLLM))))
-	http.Handle("/v1/insights/stream", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(api.WithUser(s.InsightsStream))))
+	http.Handle("/v1/user/reset", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.ResetUser)))
+	http.Handle("/v1/user/id", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.GetUserId)))
+	http.Handle("/v1/questions", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.GetQuestions)))
+	http.Handle("/v1/responses", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.SubmitResponses)))
+	http.Handle("/v1/insights/llm/generate/holistic", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.GenerateHolistic)))
+	http.Handle("/v1/insights/llm", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.GetInsightsLLM)))
+	http.Handle("/v1/insights/stream", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.InsightsStream)))
 
 	log.Println("Server running")
 	log.Fatal(http.ListenAndServe(":8080", nil))
