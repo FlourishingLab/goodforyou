@@ -34,12 +34,11 @@ Generates and returns a user ID.
 Gets the next x (in this case 10) questions in order of priority of user with USERID
 
 ### POST /v1/responses
-expects answers to questions from a specified user
+expects answers to questions from a specified user (in cookie)
 side effect: if new responses lead to entirely answered dimension -> populate dimension insights
 Body:
 ```json
 {
-    "userId": "eoXTTT9A",
     "answers": [
         {"questionId": 1, "value":3},
         {"questionId": 2, "value":9}
@@ -48,11 +47,11 @@ Body:
 ```
 
 
-### GET v1/insights/llm/<user-id>/holistic
-Insight considering all responses and all dimensions
+### GET v1/insights/llm/generate/holistic
+executes holistic prompt
 
-### GET v1/insights/llm/<user-id>/<dimension>
-Insights for one specific dimension
+### GET v1/insights/llm
+returns all insights for a user
 
 
 ## Wording

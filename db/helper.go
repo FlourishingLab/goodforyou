@@ -95,12 +95,23 @@ func (ua *UserAnswers) DimensionRatingsToString(dimensionName string, dimensions
 }
 
 func (ua *UserAnswers) HasInsight(insightName string) bool {
-	_, ok := ua.Insights[insightName]
-	return ok
+	insight, ok := ua.Insights[insightName]
+	if ok && insight.Status == DONE {
+		return true
+	}
+	return false
+}
+
+func (ua *UserAnswers) NeedsInsight(insightName string) bool {
+	insight, ok := ua.Insights[insightName]
+	if !ok || insight.Status == GENERATING {
+		return true
+	}
+	return false
 }
 
 func (ua *UserAnswers) GetInsight(insightName string) json.RawMessage {
-	v, _ := ua.Insights[insightName]
+	v := ua.Insights[insightName]
 	return v.InsightJson
 }
 

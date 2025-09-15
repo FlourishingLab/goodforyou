@@ -106,16 +106,15 @@ func loadQuestionsCSV() error {
 
 		dimensions[question.Dimension] = dimension
 	}
-
 	return nil
 }
 
 func GetNextQuestions(userId string) ([]shared.Question, error) {
 
 	// need answered questions
-	userAnswer, exist := db.GetUser(userId)
-	if !exist {
-		return nil, errors.New("user not found")
+	userAnswer, err := db.GetUser(userId)
+	if err != nil {
+		return nil, err
 	}
 
 	// Are general dimension questions answered
@@ -165,7 +164,7 @@ func GetCompleteDimensions(ua db.UserAnswers) []string {
 
 	// create copy of dimensions map
 	dims := make(map[string]shared.Dimension)
-	for k, v := range GetDimensions() {
+	for k, v := range dimensions {
 		//TODO temporarily remove dimensions without questions
 		if k != "Happiness & Life Satisfaction" &&
 			k != "Character & Virtue" {
@@ -189,14 +188,14 @@ func getFromFile() (*os.File, error) {
 
 func GetDimensions() map[string]shared.Dimension {
 	// Return a copy of the dimensions map
-	var copy map[string]shared.Dimension
+	copy := make(map[string]shared.Dimension, len(dimensions))
 	maps.Copy(copy, dimensions)
 	return copy
 }
 
 func GetQuestions() map[int]shared.Question {
 	// Return a copy of the questions map
-	var copy map[int]shared.Question
+	copy := make(map[int]shared.Question, len(questions))
 	maps.Copy(copy, questions)
 	return copy
 }

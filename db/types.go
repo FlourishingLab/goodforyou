@@ -24,5 +24,13 @@ type AnswerEvent struct {
 }
 
 type Insight struct {
+	Status      InsightStatus   `json:"status"`
 	InsightJson json.RawMessage `json:"insightJson"`
 }
+
+type InsightStatus string
+
+const (
+	GENERATING InsightStatus = "GENERATING"
+	DONE       InsightStatus = "DONE"
+)

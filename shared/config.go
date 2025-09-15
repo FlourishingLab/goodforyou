@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	Environment string `json:"environment"`
-	CorsOrigin  string `json:"cors_origin"`
+	Environment string   `json:"environment"`
+	CorsOrigins []string `json:"cors_origins"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -17,7 +17,7 @@ func LoadConfig() (*Config, error) {
 		env = "dev" // Default to development if APP_ENV is not set
 	}
 
-	configFile := fmt.Sprintf("%s.json", env)
+	configFile := fmt.Sprintf("config/%s.json", env)
 	file, err := os.Open(configFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open config file: %w", err)
