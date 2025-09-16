@@ -150,7 +150,7 @@ func (s *Server) GenerateHolistic(w http.ResponseWriter, r *http.Request) {
 
 	userAnswers, err := db.GetUser(uid)
 	if err != nil {
-		log.Printf("error getting user: %s", uid)
+		log.Printf("error getting user (%s): %v", uid, err)
 		return
 	}
 
@@ -179,7 +179,7 @@ func (s *Server) GetInsightsLLM(w http.ResponseWriter, r *http.Request) {
 
 	userAnswers, err := db.GetUser(uid)
 	if err != nil {
-		log.Printf("error getting user: %s", uid)
+		log.Printf("error getting user (%s): %v", uid, err)
 		return
 	}
 

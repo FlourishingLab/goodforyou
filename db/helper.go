@@ -103,11 +103,8 @@ func (ua *UserAnswers) HasInsight(insightName string) bool {
 }
 
 func (ua *UserAnswers) NeedsInsight(insightName string) bool {
-	insight, ok := ua.Insights[insightName]
-	if !ok || insight.Status == GENERATING {
-		return true
-	}
-	return false
+	_, ok := ua.Insights[insightName]
+	return !ok
 }
 
 func (ua *UserAnswers) GetInsight(insightName string) json.RawMessage {

@@ -72,7 +72,7 @@ func getAnswersForUser(userId string) {
 
 	userAnswers, err := db.GetUser(userId)
 	if err != nil {
-		log.Printf("Error getting user: %s", userId)
+		log.Printf("Error getting user (%s): %v", userId, err)
 		os.Exit(1)
 	}
 	log.Printf("UserAnswers for user %s: %v", userId, userAnswers)
