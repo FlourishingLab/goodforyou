@@ -29,7 +29,7 @@ func (s *Server) ResetUser(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Unix(0, 0),
 		Secure:   true,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	w.Header().Set("Content-Type", "application/json")
