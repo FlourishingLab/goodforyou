@@ -60,7 +60,7 @@ func (s *Server) GetUserId(w http.ResponseWriter, r *http.Request) {
 			MaxAge:   31536000, // 1 year
 			Secure:   true,     // set true in HTTPS
 			HttpOnly: true,
-			SameSite: http.SameSiteLaxMode,
+			SameSite: http.SameSiteNoneMode,
 		})
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -74,7 +74,7 @@ func (s *Server) GetQuestions(w http.ResponseWriter, r *http.Request) {
 	nextQuestions, err := questions.GetNextQuestions(uid)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Printf("Could not get questions: %s", err)
+		log.Printf("Could not get questions for user (%s): %v", uid, err)
 		return
 	}
 
