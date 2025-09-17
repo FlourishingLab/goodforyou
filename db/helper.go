@@ -20,16 +20,16 @@ func (ua *UserAnswers) SortByDimension(qs []shared.Question, dims map[string]sha
 
 	dimsToQuestions := make(map[string][]int)
 
-	for i, question := range qs {
-		answer := ua.GetLatestAnswer(i)
+	for _, question := range qs {
+		answer := ua.GetLatestAnswer(question.ID)
 		if answer != nil {
 			dimsToQuestions[question.Dimension] = append(dimsToQuestions[question.Dimension], *answer.Value)
 		}
 	}
 
 	var sortedDimensions []shared.CatVal
-	for i, v := range dimsToQuestions {
-		sortedDimensions = append(sortedDimensions, shared.CatVal{CatType: shared.DimensionType, Name: i, Value: avg(v)})
+	for dimName, v := range dimsToQuestions {
+		sortedDimensions = append(sortedDimensions, shared.CatVal{CatType: shared.DimensionType, Name: dimName, Value: avg(v)})
 	}
 
 	// Sort by Value (ascending)

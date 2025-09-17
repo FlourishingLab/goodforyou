@@ -10,6 +10,7 @@
   (- response endpoint signals if new insight (how to prevent wait?))
   - create list of domains with insights in frontend
 
+- add uid and other labels to logs
 
 - dimension http representation! "Meaning & Purpose" isn't good cause spaces and & character 
 

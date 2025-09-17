@@ -71,7 +71,13 @@ func (s *Server) GetQuestions(w http.ResponseWriter, r *http.Request) {
 
 	uid := getUid(r)
 
-	nextQuestions, err := questions.GetNextQuestions(uid)
+	// need answered questions
+	userAnswer, err := db.GetUser(uid)
+	if err != nil {
+		log.Printf("error getting user (%s): %v", uid, err)
+	}
+
+	nextQuestions, err := questions.GetNextQuestions(userAnswer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Printf("Could not get questions for user (%s): %v", uid, err)
@@ -255,7 +261,7 @@ func WithCORS(allowedOrigins []string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
 
-			log.Printf("CORS: Request from origin: %s, allowed: %v", origin, allowedOrigins)
+			// log.Printf("CORS: Request from origin: %s, allowed: %v", origin, allowedOrigins)
 
 			// Always vary on these so caches behave
 			w.Header().Add("Vary", "Origin")
@@ -275,7 +281,7 @@ func WithCORS(allowedOrigins []string) func(http.Handler) http.Handler {
 			}
 
 			if r.Method == http.MethodOptions {
-				log.Printf("CORS: Handling preflight request")
+				// log.Printf("CORS: Handling preflight request")
 				// Preflight response
 				w.WriteHeader(http.StatusNoContent)
 				return

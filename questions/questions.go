@@ -1,15 +1,21 @@
 package questions
 
 import (
+	_ "embed"
 	"encoding/csv"
 	"errors"
 	"log"
 	"maps"
-	"os"
+	"strings"
 
 	"user-db/db"
 	"user-db/shared"
 )
+
+// Embed the questions.csv file
+//
+//go:embed questions.csv
+var questionsCSV []byte
 
 var dimensions map[string]shared.Dimension
 var dimensionQuestions []shared.Question
@@ -33,12 +39,9 @@ func init() {
 }
 
 func loadQuestionsCSV() error {
-	questionsCSV, err := getFromFile()
-	if err != nil {
-		return err
-	}
 
-	reader := csv.NewReader(questionsCSV)
+	// Use the embedded questionsCSV data
+	reader := csv.NewReader(strings.NewReader(string(questionsCSV)))
 	rows, err := reader.ReadAll()
 	if err != nil {
 		return err
@@ -49,13 +52,15 @@ func loadQuestionsCSV() error {
 
 	for i, row := range rows {
 
+		// start with 1 to align with the google sheet
+		questionNumber := i + 1
 		// TODO validate more
 		if row[3] == "" {
 			return errors.New("question text cannot be empty")
 		}
 
 		question := shared.Question{
-			ID:           i,
+			ID:           questionNumber,
 			Dimension:    row[0],
 			SubDimension: row[1],
 			Facet:        row[2],
@@ -63,7 +68,7 @@ func loadQuestionsCSV() error {
 			MinLabel:     row[4],
 			MaxLabel:     row[5],
 		}
-		questions[i] = question
+		questions[questionNumber] = question
 
 		// init dimensions
 		dimension, ok := dimensions[question.Dimension]
@@ -109,23 +114,17 @@ func loadQuestionsCSV() error {
 	return nil
 }
 
-func GetNextQuestions(userId string) ([]shared.Question, error) {
-
-	// need answered questions
-	userAnswer, err := db.GetUser(userId)
-	if err != nil {
-		return nil, err
-	}
+func GetNextQuestions(userAnswers db.UserAnswers) ([]shared.Question, error) {
 
 	// Are general dimension questions answered
 	for _, v := range dimensionQuestions {
-		if userAnswer.GetLatestAnswer(v.ID) == nil {
+		if userAnswers.GetLatestAnswer(v.ID) == nil {
 			return dimensionQuestions, nil
 		}
 	}
 
 	// All general dimension questions answered, sort them
-	sortedDimQ := userAnswer.SortByDimension(dimensionQuestions, GetDimensions())
+	sortedDimQ := userAnswers.SortByDimension(dimensionQuestions, GetDimensions())
 
 	// start with the lowest Dimension
 	for _, dim := range sortedDimQ {
@@ -134,7 +133,7 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 
 		// Are general subdimension questions answered?
 		for _, v := range currentDimension.GeneralQuestions {
-			if userAnswer.GetLatestAnswer(v.ID) == nil {
+			if userAnswers.GetLatestAnswer(v.ID) == nil {
 				return currentDimension.GeneralQuestions, nil
 			}
 		}
@@ -147,7 +146,7 @@ func GetNextQuestions(userId string) ([]shared.Question, error) {
 			for _, facets := range sd.Facets {
 				for _, question := range facets.Questions {
 					subDimQs = append(subDimQs, question)
-					if userAnswer.GetLatestAnswer(question.ID) == nil {
+					if userAnswers.GetLatestAnswer(question.ID) == nil {
 						allAnswered = false
 					}
 				}
@@ -181,11 +180,6 @@ func GetCompleteDimensions(ua db.UserAnswers) []string {
 	return shared.GetKeysFromMap(dims)
 }
 
-func getFromFile() (*os.File, error) {
-	const FILE_PATH = "questions/questions.csv"
-	return os.Open(FILE_PATH)
-}
-
 func GetDimensions() map[string]shared.Dimension {
 	// Return a copy of the dimensions map
 	copy := make(map[string]shared.Dimension, len(dimensions))
@@ -197,5 +191,11 @@ func GetQuestions() map[int]shared.Question {
 	// Return a copy of the questions map
 	copy := make(map[int]shared.Question, len(questions))
 	maps.Copy(copy, questions)
+	return copy
+}
+
+func GetDimensionQuestions() []shared.Question {
+	// Return a copy of the questions map
+	copy := make([]shared.Question, len(questions))
 	return copy
 }
