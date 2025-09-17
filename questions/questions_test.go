@@ -97,6 +97,29 @@ func TestGetNextQuestions(t *testing.T) {
 			wantID:  42, // Expecting spirituality question
 			wantErr: false,
 		},
+		{
+			name: "all-5",
+			userAnswers: db.UserAnswers{
+				UserID: "all-5",
+				Answers: answerSliceToAnswers(map[int]int{
+					1:  5,
+					2:  5,
+					3:  5,
+					4:  5,
+					5:  5,
+					6:  5,
+					7:  5,
+					8:  5,
+					9:  5,
+					10: 5,
+					11: 5,
+					12: 5,
+					13: 5,
+				}),
+			},
+			wantID:  45,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -29,7 +29,7 @@ func HolisticPrompt(sortedDimensions []shared.CatVal, sortedFacets []shared.CatV
 			ID: "pmpt_68a854a4a3c48193ba6b74da1a8e866a0c7c540e5eb70354",
 		},
 		Input: responses.ResponseNewParamsInputUnion{
-			OfString: param.Opt[string]{Value: "Response in JSON\ncategories:\n" + catValToString(sortedDimensions) + "\nweakest subcategories\n:" + catValToString(sortedFacets)},
+			OfString: param.Opt[string]{Value: "Response in JSON\ndimension ratings:" + catValToString(sortedDimensions) + "\n\nfacets:\n" + catValToString(sortedFacets)},
 		},
 	}
 
