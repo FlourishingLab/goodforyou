@@ -304,6 +304,7 @@ func getUid(r *http.Request) string {
 	var uid string
 	if c, err := r.Cookie(COOKIENAME); err != nil {
 		// TODO check for cookie not found error otherwise handle error differently
+		log.Printf("error getting cookie: %s", err)
 		return ""
 	} else {
 		uid = c.Value
