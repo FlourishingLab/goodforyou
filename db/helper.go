@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/json"
-	"log"
 	"sort"
 	"strconv"
 	"user-db/shared"
@@ -126,9 +125,6 @@ func (ua *UserAnswers) GetSorted(qs map[int]shared.Question, dims map[string]sha
 
 	sortedDims = ua.SortByDimension(questionsList, dims)
 	sortedFacets = ua.SortByFacet(questionsList)
-
-	log.Printf("Dimensions: %v", sortedDims)
-	log.Printf("Facets: %v", sortedFacets[:5])
 
 	return sortedDims, sortedFacets
 }
