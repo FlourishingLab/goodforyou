@@ -49,9 +49,9 @@ func (ua *UserAnswers) SortByFacet(qs []shared.Question) []shared.CatVal {
 
 	facetsToQuestions := make(map[string][]int)
 
-	for i, question := range qs {
+	for _, question := range qs {
 		if question.Facet != shared.GENERAL {
-			answer := ua.GetLatestAnswer(i)
+			answer := ua.GetLatestAnswer(question.ID)
 			if answer != nil {
 				facetsToQuestions[question.SubDimension+"."+question.Facet] = append(facetsToQuestions[question.Facet], *answer.Value)
 			}

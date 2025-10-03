@@ -5,6 +5,7 @@ import (
 	"user-db/db"
 	"user-db/questions"
 	"user-db/shared"
+	"user-db/test"
 )
 
 func TestGetNextQuestions(t *testing.T) {
@@ -27,7 +28,7 @@ func TestGetNextQuestions(t *testing.T) {
 			name: "spirituality-is-worse",
 			userAnswers: db.UserAnswers{
 				UserID: "spirituality-is-worse",
-				Answers: answerSliceToAnswers(map[int]int{
+				Answers: test.AnswerSliceToAnswers(map[int]int{
 					1:  5,
 					2:  5,
 					3:  5,
@@ -50,7 +51,7 @@ func TestGetNextQuestions(t *testing.T) {
 			name: "material-stability-is-worst",
 			userAnswers: db.UserAnswers{
 				UserID: "material-stability-is-worst",
-				Answers: answerSliceToAnswers(map[int]int{
+				Answers: test.AnswerSliceToAnswers(map[int]int{
 					1:  5,
 					2:  5,
 					3:  5,
@@ -73,7 +74,7 @@ func TestGetNextQuestions(t *testing.T) {
 			name: "material-answered-spirit-next",
 			userAnswers: db.UserAnswers{
 				UserID: "material-answered-spirit-next",
-				Answers: answerSliceToAnswers(map[int]int{
+				Answers: test.AnswerSliceToAnswers(map[int]int{
 					1:  5,
 					2:  5,
 					3:  5,
@@ -101,7 +102,7 @@ func TestGetNextQuestions(t *testing.T) {
 			name: "all-5",
 			userAnswers: db.UserAnswers{
 				UserID: "all-5",
-				Answers: answerSliceToAnswers(map[int]int{
+				Answers: test.AnswerSliceToAnswers(map[int]int{
 					1:  5,
 					2:  5,
 					3:  5,
@@ -117,7 +118,7 @@ func TestGetNextQuestions(t *testing.T) {
 					13: 5,
 				}),
 			},
-			wantID:  45,
+			wantID:  23,
 			wantErr: false,
 		},
 	}
@@ -147,16 +148,4 @@ func qsWithID(got []shared.Question, wantID int) bool {
 		}
 	}
 	return false
-}
-
-func answerSliceToAnswers(fakeAnswers map[int]int) map[int]db.QuestionAnswers {
-	result := make(map[int]db.QuestionAnswers, len(fakeAnswers))
-	for k, v := range fakeAnswers {
-		result[k] = db.QuestionAnswers{
-			LatestAnswer: db.AnswerEvent{
-				Value: &v,
-			},
-		}
-	}
-	return result
 }
