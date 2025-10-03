@@ -1,5 +1,10 @@
 package api
 
+import (
+	"user-db/paragraph"
+	"user-db/shared"
+)
+
 type ResponsePayload struct {
 	Answers []HttpAnswer `json:"answers"`
 }
@@ -11,3 +16,9 @@ type HttpAnswer struct {
 }
 
 type contextKey string
+
+type ConsistentlyResponse struct {
+	Streak    int                 `json:"streak"`
+	Paragraph paragraph.Paragraph `json:"paragraph"`
+	Questions []shared.Question   `json:"questions"`
+}

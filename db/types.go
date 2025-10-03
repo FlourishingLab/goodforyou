@@ -5,11 +5,15 @@ import (
 	"time"
 )
 
+// TODO rename to UserData
 type UserAnswers struct {
 	// primary key in MongoDB
-	UserID   string                  `json:"_id"`
-	Answers  map[int]QuestionAnswers `json:"answers"`
-	Insights map[string]Insight      `json:"insights"`
+	UserID     string                  `json:"_id"`
+	Answers    map[int]QuestionAnswers `json:"answers"`
+	Insights   map[string]Insight      `json:"insights"`
+	Paragraphs map[int]Paragraph       `json:"paragraphs"`
+	LastVisit  time.Time               `json:"lastVisited"`
+	Streak     int                     `json:"streak"`
 }
 
 type QuestionAnswers struct {
@@ -34,3 +38,7 @@ const (
 	GENERATING InsightStatus = "GENERATING"
 	DONE       InsightStatus = "DONE"
 )
+
+type Paragraph struct {
+	WasShown bool `json:"wasShown"`
+}

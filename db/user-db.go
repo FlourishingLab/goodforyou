@@ -48,6 +48,7 @@ func NewUser(userid string) error {
 	userAnswers.UserID = userid
 	userAnswers.Answers = make(map[int]QuestionAnswers)
 	userAnswers.Insights = make(map[string]Insight)
+	userAnswers.Paragraphs = make(map[int]Paragraph)
 
 	_, err := collection.InsertOne(context.TODO(), userAnswers)
 	if err != nil {
@@ -121,6 +122,26 @@ func UpsertInsight(userid string, insightsName, insightBlob string, status Insig
 				insightsPath: insight,
 			}}
 	}
+
+	coll := client.Database(DATABASE_NAME).Collection(USERANSWERS)
+
+	_, err := coll.UpdateOne(context.TODO(), filter, update)
+
+	return err
+}
+
+func NewDay(userid string, streakNumber int, paragraphNumber int) error {
+
+	paragraphPath := "paragraph." + strconv.Itoa(paragraphNumber) + ".wasShown"
+
+	filter := bson.M{"userid": userid}
+
+	update := bson.M{
+		"$set": bson.M{
+			paragraphPath: true,
+			"streak":      streakNumber,
+			"lastVisited": time.Now(),
+		}}
 
 	coll := client.Database(DATABASE_NAME).Collection(USERANSWERS)
 

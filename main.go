@@ -8,7 +8,6 @@ import (
 	"user-db/shared"
 )
 
-// ---------- Main ----------
 func main() {
 
 	config, err := shared.LoadConfig()
@@ -27,6 +26,8 @@ func main() {
 	http.Handle("/v1/insights/llm/generate/holistic", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.GenerateHolistic)))
 	http.Handle("/v1/insights/llm", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.GetInsightsLLM)))
 	http.Handle("/v1/insights/stream", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.InsightsStream)))
+
+	http.Handle("/v1/consistently", api.WithCORS(config.CorsOrigins)(http.HandlerFunc(s.Consistently)))
 
 	log.Println("Server running")
 	log.Fatal(http.ListenAndServe(":8080", nil))

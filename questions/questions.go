@@ -114,13 +114,19 @@ func loadQuestionsCSV() error {
 	return nil
 }
 
-func GetNextQuestions(userAnswers db.UserAnswers) ([]shared.Question, error) {
+func GetNextQuestions(userAnswers db.UserAnswers, max int) ([]shared.Question, error) {
+
+	unansweredQuestions := []shared.Question{}
 
 	// Are general dimension questions answered
 	for _, v := range dimensionQuestions {
 		if userAnswers.GetLatestAnswer(v.ID) == nil {
-			return dimensionQuestions, nil
+			unansweredQuestions = append(unansweredQuestions, v)
 		}
+	}
+
+	if len(unansweredQuestions) >= max {
+		return unansweredQuestions[:max], nil
 	}
 
 	// All general dimension questions answered, sort them
@@ -134,29 +140,27 @@ func GetNextQuestions(userAnswers db.UserAnswers) ([]shared.Question, error) {
 		// Are general subdimension questions answered?
 		for _, v := range currentDimension.GeneralQuestions {
 			if userAnswers.GetLatestAnswer(v.ID) == nil {
-				return currentDimension.GeneralQuestions, nil
+				unansweredQuestions = append(unansweredQuestions, v)
 			}
 		}
 
 		// Send all questions from the first unanswered subdimension, if available
 		subDim := currentDimension.SubDimensions
 		for _, sd := range subDim {
-			allAnswered := true
-			subDimQs := []shared.Question{}
 			for _, facets := range sd.Facets {
 				for _, question := range facets.Questions {
-					subDimQs = append(subDimQs, question)
 					if userAnswers.GetLatestAnswer(question.ID) == nil {
-						allAnswered = false
+						unansweredQuestions = append(unansweredQuestions, question)
 					}
 				}
 			}
-			if !allAnswered {
-				return subDimQs, nil
+			if len(unansweredQuestions) >= max {
+				return unansweredQuestions[:max], nil
 			}
 		}
 	}
-	return []shared.Question{}, nil
+
+	return unansweredQuestions, nil
 }
 
 func GetCompleteDimensions(ua db.UserAnswers) []string {

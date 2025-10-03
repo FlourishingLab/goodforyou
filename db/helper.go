@@ -49,9 +49,9 @@ func (ua *UserAnswers) SortByFacet(qs []shared.Question) []shared.CatVal {
 
 	facetsToQuestions := make(map[string][]int)
 
-	for i, question := range qs {
+	for _, question := range qs {
 		if question.Facet != shared.GENERAL {
-			answer := ua.GetLatestAnswer(i)
+			answer := ua.GetLatestAnswer(question.ID)
 			if answer != nil {
 				facetsToQuestions[question.SubDimension+"."+question.Facet] = append(facetsToQuestions[question.Facet], *answer.Value)
 			}
@@ -131,4 +131,16 @@ func (ua *UserAnswers) GetSorted(qs map[int]shared.Question, dims map[string]sha
 	log.Printf("Facets: %v", sortedFacets[:5])
 
 	return sortedDims, sortedFacets
+}
+
+func (ua *UserAnswers) IDOfNextParagraph() int {
+	highest := 0
+	for k, v := range ua.Paragraphs {
+		if v.WasShown {
+			if k > highest {
+				highest = k
+			}
+		}
+	}
+	return highest + 1
 }

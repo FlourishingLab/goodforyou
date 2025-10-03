@@ -1,0 +1,102 @@
+{
+  "1": {
+    "text": {
+      "title": "Consistency beats motivation",
+      "short": "Willpower fluctuates, but habits run automatically. We will start to train your consistency while finding out what's good for you. The App itself will be your first practice.",
+      "long": "Willpower is a limited resource: it waxes and wanes with stress, fatigue, and mood. Relying purely on willpower means you will have good days and bad days. Habits, however, are automatic behavioral patterns learned through repetition in consistent contexts. Once a cue triggers the habit, you no longer need to consciously decide. In this App, the goal is to shift reliance from sporadic willpower to steady consistency. You will begin by using the App daily (your first habit) to repeat a tiny action in a stable cue context. Over time, your brain will encode the cue → action link such that the behavior becomes more automatic."
+    },
+    "links": {
+      "inspirational": "https://www.youtube.com/watch?v=V5BXuZL1HAg"
+    }
+  },
+  "2": {
+    "text": {
+      "title": "Start tiny and anchor habits",
+      "short": "Start tiny. Pick a 30-60 second version of your habit and anchor it to a reliable cue. Track it in the App.",
+      "long": "Small behaviors repeat more easily and wire faster. Choose a micro-step that feels effortless (e.g., one push-up, opening a book, one deep breath at your desk). Attach it to an existing routine (after coffee, after brushing, when you sit at your desk). In the App, set the anchor, define the tiny action, and mark it done daily. Consistency beats volume at the beginning."
+    },
+    "links": {
+      "inspirational": "https://www.youtube.com/watch?v=AdKUJxjn-R8"
+    }
+  },
+  "3": {
+    "text": {
+      "title": "Design your context for success",
+      "short": "Design your context. Make the cue obvious and the action easy. Let the App's timed notifications reinforce the same context daily.",
+      "long": "Habits rely on cues. Put objects in the path of behavior and remove friction. Example levers: place running shoes by the door, keep water on your desk, remove distracting apps from the home screen. In the App, schedule reminders for the same time and context, and pin a home-screen widget so the next action is one tap away."
+    },
+    "links": {
+      "inspirational": "https://ed.ted.com/lessons/why-is-it-so-hard-to-break-a-bad-habit"
+    }
+  },
+  "4": {
+    "text": {
+      "title": "Write an if-then plan",
+      "short": "Write an if-then plan. 'If [cue], then I will [tiny action].' Store it in the App so the cue and action stay linked.",
+      "long": "Implementation intentions convert intentions into automatic responses to specific cues. Define one reliable cue and a concrete action. Example: “If I finish lunch, then I will walk for one minute.” Add this as an if-then card in the App and review it before the likely cue window. This reduces choice and protects follow-through under low motivation."
+    },
+    "links": {
+      "inspirational": "https://hiddenbrain.org/podcast/you-2-0-woop-woop/"
+    }
+  },
+  "5": {
+    "text": {
+      "title": "Stack new habits on old ones",
+      "short": "Stack new on old. After a stable routine, add one small action. Use the App to chain steps: anchor → tiny action → quick check-off.",
+      "long": "Habit stacking leverages an existing behavior as a cue for a new one. Choose an anchor you already do daily, then attach a tiny action immediately after. The sequence timing matters more than duration. In the App, map the stack and enable a post-action nudge to keep the chain tight."
+    },
+    "links": {
+      "inspirational": "https://podcasts.apple.com/us/podcast/the-science-of-making-breaking-habits/id1545953110?i=1000546768225"
+    }
+  },
+  "6": {
+    "text": {
+      "title": "Plan for slips and resets",
+      "short": "Plan for slips. Decide now how you'll reset. Use the App's 'Reset Plan' note: what you'll do on the very next day.",
+      "long": "Misses are data, not drama. Effective plans include coping responses to predictable obstacles (travel, late nights, illness). Write a reset rule: “If I miss, I'll return tomorrow with the tiny version only.” In the App, save a one-tap reset and a short reflection template so you learn and continue without overcorrecting."
+    },
+    "links": {
+      "inspirational": "https://www.hiddenbrain.org/podcast/creatures-of-habit/"
+    }
+  },
+  "7": {
+    "text": {
+      "title": "Track progress and get feedback",
+      "short": "Track and get feedback. Mark completions and view streaks. The App should show repetition counts, not just time spent.",
+      "long": "Self-monitoring and timely feedback increase adherence. Track binary completion for the tiny action each day. Review weekly charts to spot context patterns and adjust cues. Keep the metric simple: 'Did I complete the tiny version today?' Optional: add a quick note on context quality for later optimization."
+    },
+    "links": {
+      "inspirational": "https://one.npr.org/?sharedMediaId=787160734%3A791827236"
+    }
+  },
+  "8": {
+    "text": {
+      "title": "Focus on repetition, not timelines",
+      "short": "Expect non-linear timelines. Repetition in a stable context matters more than any fixed 'X days.' Use the App to count reps.",
+      "long": "Habit automaticity grows gradually and plateaus. Formation time varies widely by behavior and context. Focus on consistent repetitions tied to the same cue. In the App, aim for 'reps per context' and celebrate plateaus as stability, not stagnation. When stable, scale slowly."
+    },
+    "links": {
+      "inspirational": "https://www.youtube.com/watch?v=AOPlCbCxaFA"
+    }
+  },
+  "9": {
+    "text": {
+      "title": "Make habits rewarding",
+      "short": "Make it rewarding. Pair the habit with something you enjoy. Log the bundle in the App so the reward follows the action.",
+      "long": "Immediate rewards teach your brain the value of repeating the behavior. 'Temptation bundling' pairs a must-do with a want-to (e.g., favorite podcast only while walking). In the App, create a bundle card: action → linked reward. Keep rewards consistent and immediate after the tiny action."
+    },
+    "links": {
+      "inspirational": "https://www.youtube.com/watch?v=v0xWDTUN7Ag"
+    }
+  },
+  "10": {
+    "text": {
+      "title": "Add accountability to your habits",
+      "short": "Add light accountability. Share your plan with one person or a group and post weekly check-ins through the App.",
+      "long": "Supportive accountability improves follow-through, especially when goals and check-in schedules are explicit. In the App, enable a weekly report and invite one partner to see completion status. Keep accountability supportive, not punitive: confirm cue, tiny action, and next week's plan."
+    },
+    "links": {
+      "inspirational": "https://newsinhealth.nih.gov/2024/05/get-active-together"
+    }
+  }
+}
