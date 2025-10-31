@@ -22,13 +22,14 @@ var dimensionQuestions []shared.Question
 var questions map[int]shared.Question
 
 var dimensionOrder map[string]int = map[string]int{
-	"Physical Health":      1,
-	"Mental Health":        2,
-	"Social Relationships": 3,
-	"Character & Virtue":   4,
-	"Meaning & Purpose":    5,
-	"Spirituality":         6,
-	"Material Stability":   7,
+	"Habits":               1,
+	"Physical Health":      2,
+	"Mental Health":        3,
+	"Social Relationships": 4,
+	"Character & Virtue":   5,
+	"Meaning & Purpose":    6,
+	"Spirituality":         7,
+	"Material Stability":   8,
 }
 
 func init() {
@@ -114,17 +115,26 @@ func loadQuestionsCSV() error {
 	return nil
 }
 
-func GetNextQuestions(userAnswers db.UserAnswers) ([]shared.Question, error) {
+func GetNextQuestions(userAnswers db.UserAnswers, prioDimension string) ([]shared.Question, error) {
 
-	// Are general dimension questions answered
-	for _, v := range dimensionQuestions {
-		if userAnswers.GetLatestAnswer(v.ID) == nil {
-			return dimensionQuestions, nil
+	var sortedDimQ []shared.CatVal
+	if prioDimension == "" {
+		// Are general dimension questions answered
+		for _, v := range dimensionQuestions {
+			if userAnswers.GetLatestAnswer(v.ID) == nil {
+				return dimensionQuestions, nil
+			}
 		}
-	}
 
-	// All general dimension questions answered, sort them
-	sortedDimQ := userAnswers.SortByDimension(dimensionQuestions, GetDimensions())
+		// All general dimension questions answered, sort them
+		sortedDimQ = userAnswers.SortByDimension(dimensionQuestions, GetDimensions())
+	} else {
+		sortedDimQ = []shared.CatVal{{
+			CatType: shared.DimensionType,
+			Name:    prioDimension,
+			Value:   5, // TODO, weird that I need to set this here
+		}}
+	}
 
 	// start with the lowest Dimension
 	for _, dim := range sortedDimQ {
@@ -198,4 +208,10 @@ func GetDimensionQuestions() []shared.Question {
 	// Return a copy of the questions map
 	copy := make([]shared.Question, len(questions))
 	return copy
+}
+
+// IsValidDimension checks if the given dimension name exists in dimensionOrder
+func IsValidDimension(dimensionName string) bool {
+	_, exists := dimensionOrder[dimensionName]
+	return exists
 }

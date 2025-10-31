@@ -46,5 +46,14 @@ Spirituality,Awe & Transcendence,Guiding Beliefs,How strongly do you feel guided
 Material Stability,Financial Planning,Cashflow Plan & Tracking,How clearly did you know where your money went and follow a plan in the past month?,not clear at all,very clear,need answer,
 Material Stability,Financial Planning,Payments Reliability,How consistently were all your bills paid on time in the past month?,always late,always on-time,need answer,
 Material Stability,Financial Planning,Liquidity,"Right now, how confident are you that you could cover one month of essential expenses from savings without new debt?",not confident at all,very confident,need answer,
-Material Stability,Financial Planning,Debt Management,If you have debt: how consistently are you following a clear plan to reduce it?,never,always / not debt,does not apply,This only applies to people with debt!
+Material Stability,Financial Planning,Debt Management,If you have debt: how consistently are you following a clear plan to reduce it?,never,always / no debt,does not apply,This only applies to people with debt!
 Material Stability,Financial Planning,Saving & Investing,How consistently are you setting aside money for future needs or goals?,never,always,need answer,
+Habits,general,general,How consistently do you actually do the things you know are good for you?,never,always,need answer,
+Habits,general,general,How often do you manage to avoid doing things you know are not good for you?,never,always,need answer,
+Habits,Action Control,Initiation Control,"How reliably do you start doing something that is good for you at the time you planned, even when you don’t feel like it?",never,always,need answer,
+Habits,Action Control,Recovery Control,How quickly do you get back to a healthy or important routine after you miss it or slip?,after a long time,immediately,need answer,
+Habits,Context,Cue Control,How well is your daily environment set up to make good behaviors easy and bad behaviors difficult?,not good at all,very good,need answer,
+Habits,Context,Routine Stability,How consistent are the times and situations in which you perform your regular activities?,not consistent at all,very consistent,,
+Habits,Habits,Value Alignment,How strongly do your habits reflect what truly matters to you personally?,not at all,very strongly,,
+Habits,Habits,Self-Efficacy,How confident are you that you can build or change habits successfully when you decide to?,not confident at all,very confident,,
+Habits,Habits,Reflection,How often do you review your progress and adjust your routines to stay on track?,never,daily,,

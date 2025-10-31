@@ -10,13 +10,15 @@ import (
 
 func TestGetNextQuestions(t *testing.T) {
 	tests := []struct {
-		name        string // description of this test case
-		userAnswers db.UserAnswers
-		wantID      int
-		wantErr     bool
+		name          string
+		prioDimension string
+		userAnswers   db.UserAnswers
+		wantID        int
+		wantErr       bool
 	}{
 		{
-			name: "no-answers",
+			name:          "no-answers",
+			prioDimension: "",
 			userAnswers: db.UserAnswers{
 				UserID:  "no-answers",
 				Answers: map[int]db.QuestionAnswers{},
@@ -25,7 +27,8 @@ func TestGetNextQuestions(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "spirituality-is-worse",
+			name:          "spirituality-is-worse",
+			prioDimension: "",
 			userAnswers: db.UserAnswers{
 				UserID: "spirituality-is-worse",
 				Answers: test.AnswerSliceToAnswers(map[int]int{
@@ -42,6 +45,8 @@ func TestGetNextQuestions(t *testing.T) {
 					11: 5,
 					12: 10,
 					13: 1,
+					51: 5,
+					52: 5,
 				}),
 			},
 			wantID:  45,
@@ -65,13 +70,16 @@ func TestGetNextQuestions(t *testing.T) {
 					11: 5,
 					12: 1,
 					13: 3,
+					51: 5,
+					52: 5,
 				}),
 			},
 			wantID:  49,
 			wantErr: false,
 		},
 		{
-			name: "material-answered-spirit-next",
+			name:          "material-answered-spirit-next",
+			prioDimension: "",
 			userAnswers: db.UserAnswers{
 				UserID: "material-answered-spirit-next",
 				Answers: test.AnswerSliceToAnswers(map[int]int{
@@ -88,6 +96,8 @@ func TestGetNextQuestions(t *testing.T) {
 					11: 5,
 					12: 1, // material stability is the worst
 					13: 3, // spirituality is the second worst
+					51: 5,
+					52: 5,
 					46: 5,
 					47: 5,
 					48: 5,
@@ -99,7 +109,8 @@ func TestGetNextQuestions(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "all-5",
+			name:          "all-5",
+			prioDimension: "",
 			userAnswers: db.UserAnswers{
 				UserID: "all-5",
 				Answers: test.AnswerSliceToAnswers(map[int]int{
@@ -116,15 +127,43 @@ func TestGetNextQuestions(t *testing.T) {
 					11: 5,
 					12: 5,
 					13: 5,
+					51: 5,
+					52: 5,
 				}),
 			},
-			wantID:  23,
+			wantID:  53,
+			wantErr: false,
+		},
+		{
+			name:          "Spirituality",
+			prioDimension: "Spirituality",
+			userAnswers: db.UserAnswers{
+				UserID: "Spirituality",
+				Answers: test.AnswerSliceToAnswers(map[int]int{
+					1:  5,
+					2:  5,
+					3:  5,
+					4:  5,
+					5:  5,
+					6:  5,
+					7:  5,
+					8:  5,
+					9:  5,
+					10: 5,
+					11: 5,
+					12: 5,
+					13: 5,
+					51: 5,
+					52: 5,
+				}),
+			},
+			wantID:  42,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotErr := questions.GetNextQuestions(tt.userAnswers)
+			got, gotErr := questions.GetNextQuestions(tt.userAnswers, tt.prioDimension)
 			if gotErr != nil {
 				if !tt.wantErr {
 					t.Errorf("GetNextQuestions() failed: %v", gotErr)

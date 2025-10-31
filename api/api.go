@@ -71,13 +71,27 @@ func (s *Server) GetQuestions(w http.ResponseWriter, r *http.Request) {
 
 	uid := getUid(r)
 
-	// need answered questions
+	// get answers from DB
 	userAnswer, err := db.GetUser(uid)
 	if err != nil {
 		log.Printf("error getting user (%s): %v", uid, err)
 	}
 
-	nextQuestions, err := questions.GetNextQuestions(userAnswer)
+	prioDimension := r.URL.Query().Get("dimension")
+
+	// Expected path structure: /v1/questions or /v1/questions/{dimension}
+	if prioDimension != "" {
+		if !questions.IsValidDimension(prioDimension) {
+			http.Error(w, fmt.Sprintf("Invalid dimension: %s", prioDimension), http.StatusInternalServerError)
+			log.Printf("error, unknown dimension: %s", prioDimension)
+			return
+		}
+		log.Printf("Prioritised dimension: %s", prioDimension)
+	} else {
+		log.Printf("No prioritised dimension specified")
+	}
+
+	nextQuestions, err := questions.GetNextQuestions(userAnswer, prioDimension)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Printf("Could not get questions for user (%s): %v", uid, err)
