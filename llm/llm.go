@@ -49,14 +49,25 @@ func HolisticPrompt(sortedDimensions []shared.CatVal, sortedFacets []shared.CatV
 }
 
 func DimensionPrompt(dimensionName string, dimensionRatings string) string {
-
-	params := responses.ResponseNewParams{
-		Prompt: responses.ResponsePromptParam{
-			ID: "pmpt_68b6a4fd9d048196b3acf60938dc10040d196830d567e556",
-		},
-		Input: responses.ResponseNewParamsInputUnion{
-			OfString: param.Opt[string]{Value: "Response in JSON, Focus on Dimension " + dimensionName + "\nRatings:\n" + dimensionRatings},
-		},
+	var params responses.ResponseNewParams
+	if dimensionName == shared.HABITS {
+		params = responses.ResponseNewParams{
+			Prompt: responses.ResponsePromptParam{
+				ID: "pmpt_690216e9f38c8196a2f610b858403c7b08557d4b1801b4a2",
+			},
+			Input: responses.ResponseNewParamsInputUnion{
+				OfString: param.Opt[string]{Value: dimensionRatings},
+			},
+		}
+	} else {
+		params = responses.ResponseNewParams{
+			Prompt: responses.ResponsePromptParam{
+				ID: "pmpt_68b6a4fd9d048196b3acf60938dc10040d196830d567e556",
+			},
+			Input: responses.ResponseNewParamsInputUnion{
+				OfString: param.Opt[string]{Value: "Response in JSON, Focus on Dimension " + dimensionName + "\nRatings:\n" + dimensionRatings},
+			},
+		}
 	}
 
 	resp, err := client.Responses.New(ctx, params)

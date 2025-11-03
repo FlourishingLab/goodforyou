@@ -5,6 +5,7 @@ import (
 )
 
 const GENERAL string = "general"
+const HABITS string = "Habits"
 
 type CatType int
 
