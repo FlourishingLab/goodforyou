@@ -19,18 +19,8 @@ const HOLISTIC string = "holistic"
 const COOKIENAME string = "uid"
 
 func (s *Server) ResetUser(w http.ResponseWriter, r *http.Request) {
-
-	// Delete the cookie by setting MaxAge to -1 and Expires to a past date
-	http.SetCookie(w, &http.Cookie{
-		Name:     COOKIENAME,
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1, // This expires the cookie immediately
-		Expires:  time.Unix(0, 0),
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
-	})
+	uid := getUid(r)
+	db.ResetUser(uid)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})

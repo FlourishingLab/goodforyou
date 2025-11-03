@@ -68,12 +68,22 @@ func GetUser(userID string) (UserAnswers, error) {
 
 func DeleteUser(userID string) {
 	collection := client.Database(DATABASE_NAME).Collection(USERANSWERS)
-	filter := map[string]string{"_id": userID}
+	filter := map[string]string{"userid": userID}
 	singleResult := collection.FindOneAndDelete(context.TODO(), filter)
 	if singleResult.Err() != nil {
 		panic(singleResult.Err())
 	}
-	log.Printf("deleted user: %v", singleResult.Decode(UserAnswers{}))
+	log.Printf("deleted user: %v", userID)
+}
+
+func ResetUser(userID string) {
+	collection := client.Database(DATABASE_NAME).Collection(USERANSWERS)
+	filter := map[string]string{"userid": userID}
+	collection.FindOneAndDelete(context.TODO(), filter)
+
+	NewUser(userID)
+
+	log.Printf("reset user: %v", userID)
 }
 
 func UpsertAnswer(userid string, questionID int, kind shared.AnswerKind, value int) error {
